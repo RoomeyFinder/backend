@@ -38,8 +38,6 @@ app.use(
       "http://localhost:3001",
       "http://localhost:3000",
       "http://localhost:3002",
-      "https://afrihacks2023-medai-frontend-sapphire-hacks-projects.vercel.app",
-      "https://medai-afrihacks2023.vercel.app",
     ],
     credentials: true,
   })
