@@ -14,15 +14,6 @@ const userSchema = new mongoose.Schema(
     },
     isEmailVerified: Boolean,
     isPhoneNumberVerified: Boolean,
-    userName: {
-      type: String,
-      unique: true,
-      trim: true,
-      collation: {
-        locale: "en",
-        strength: 2,
-      },
-    },
     profileImage: {
       type: String,
       default: "",
@@ -47,14 +38,10 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      unique: true,
       required: [true, "Email is required"],
       lowercase: true,
       trim: true,
-      validate: [
-        (value) =>
-          value.length > 0 && /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(value),
-        "Invalid email address",
-      ],
     },
     password: {
       type: String,
@@ -75,13 +62,6 @@ const userSchema = new mongoose.Schema(
         number: String,
       },
       required: [true, "Phone number is required"],
-      lowercase: true,
-      trim: true,
-      validate: [
-        (value) =>
-          value.length > 0 && /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(value),
-        "Invalid email address",
-      ],
     },
     origin: {
       state: String,
@@ -130,12 +110,10 @@ const userSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ["Point"],
-        required: [true, "Invalid location"],
       },
       coordinates: {
         type: [Number],
         index: "2dsphere",
-        required: [true, "Invalid location"],
       },
     },
     lookingFor: {

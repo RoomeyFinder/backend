@@ -1,41 +1,76 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require("express")
+const path = require("path")
+const cookieParser = require("cookie-parser")
+const logger = require("morgan")
+// const globalErrorHandler = require("./middlewares/error")
+const CustomError = require("./utils/error")
+const indexRouter = require("./routes/index")
+const usersRouter = require("./routes/users")
+const dotenv = require("dotenv")
+dotenv.config({
+  path: path.resolve(__dirname, ".env"),
+})
+const app = express()
+// /* */ Sessions not supported by hosting provider
+// const session = require("express-session")
+// const MongoDBStore = require("connect-mongodb-session")(session)
+// const store = new MongoDBStore({
+//   uri: process.env.CONNECTION_STRING.replace(
+//     "<password>",
+//     process.env.DB_PASSWORD
+//   ),
+//   collection: "sessions",
+//   expires: 1000 * 60 * 60 * 24 * 30,
+// })
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+app.set("views", path.join(__dirname, "views"))
+app.set("view engine", "pug")
 
-var app = express();
+app.use(logger("dev"))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, "public")))
+const cors = require("cors")
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3001",
+      "http://localhost:3000",
+      "http://localhost:3002",
+      "https://afrihacks2023-medai-frontend-sapphire-hacks-projects.vercel.app",
+      "https://medai-afrihacks2023.vercel.app",
+    ],
+    credentials: true,
+  })
+)
+// app.use(
+//   session({
+//     secret: process.env.JWT_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       secure: process.env.NODE_ENV !== "dev",
+//       maxAge: 1000 * 60 * 60 * 24 * 7,
+//       httpOnly: true,
+//       path: "/",
+//     },
+//     store: store,
+//   })
+// )
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.use("/", indexRouter)
+app.use("/api/v1", indexRouter)
+app.use("/api/v1/users", usersRouter)
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.all("*", (req, _, next) => {
+  next(
+    new CustomError(
+      `CANNOT ${req.method} ${req.originalUrl} on this server!`,
+      404
+    )
+  )
+})
+// app.use(globalErrorHandler)
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-module.exports = app;
+module.exports = app
