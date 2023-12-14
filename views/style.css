@@ -1,0 +1,15 @@
+:root{
+  --primary: #663399;
+  --secondary: #E6E6FA;
+  --white: #ffffff;
+  --grey: #191E2F;
+  --accent: #FF69B4;
+}
+body{
+  font-weight: 500;
+}
+a{
+  text-decoration: none;
+  font-weight: 400;
+  color: var(--primary);
+}
