@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 const { hashValue } = require("../utils/security")
 const CustomError = require("../utils/error")
+const { generateFromEmail, generateUsername } = require("unique-username-generator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,7 +13,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isEmailVerified: Boolean,
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
     isPhoneNumberVerified: Boolean,
     profileImage: {
       type: String,
@@ -35,6 +39,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: 4,
       maxlength: 15,
+    },
+    userName: {
+      type: String,
+      unique: true,
     },
     email: {
       type: String,
@@ -143,6 +151,13 @@ const userSchema = new mongoose.Schema(
 )
 
 userSchema.pre("save", function (next) {
+  if (this.userName.length === 0) {
+    this.userName = generateFromEmail(this.emai, 3)
+  }
+  next()
+})
+
+userSchema.pre("save", function (next) {
   if (this.isModified("password")) {
     if (
       this.password.includes(this.firstName) ||
@@ -150,7 +165,7 @@ userSchema.pre("save", function (next) {
     )
       return next(
         new CustomError(
-          "Your password cannot contain your first name or last name"
+          "Your password cannot contain your first name or last name", 400
         )
       )
     else this.password = hashValue(this.password)
