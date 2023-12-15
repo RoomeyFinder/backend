@@ -3,9 +3,10 @@ const crypto = require("crypto")
 const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
 const EmailSender = require("../services/email")
 
-async function sendVerificationEmail(user) {
+module.exports.sendVerificationEmail = async function(user) {
   if (!user) return null
   else {
+    user.emailVerificationToken = crypto.randomBytes(48).toString("hex")
     const msg = {
       from: process.env.APP_EMAIL_ADDRESS,
       to: user.email,
@@ -19,15 +20,14 @@ async function sendVerificationEmail(user) {
       await new EmailSender({
         msg, template: "verifyEmail", options
       }).sendEmail()
-      return user
     } catch (err) {
       console.log(err)
-      return null
     }
+    return user
   }
 }
 
-module.exports.create = async function (data = {}) {
+module.exports.create = async function (data = {}, save = false) {
   const { 
     firstName, lastName, email, password, 
     dob, gender, longitude, latitude, 
@@ -42,16 +42,14 @@ module.exports.create = async function (data = {}) {
       type: "Point",
       coordinates: [longitude, latitude]
     },
-    emailVerificationToken: crypto.randomBytes(48).toString("hex"),
     expireAt,
     phone: {
       countryCode,
       number: phoneNumber
     }
   })
-  newUser = await sendVerificationEmail(newUser)
-  if(newUser) return await newUser.save()
-  else return null
+  if(save) return await newUser.save()
+  return newUser
 }
 
 
@@ -70,14 +68,14 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
     currentSubscription, isIdVerified, isEmailVerified, isPhoneNumberVerified, 
     emailVerificationToken, profileImage, passwordResetToken, about, origin, 
     gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle, 
-    organization, isStudent, school, major, tags, theme 
+    organization, isStudent, school, major, tags, theme, userName
   } = update
   return await User.findOneAndUpdate(filter, {
     firstName, lastName, dob,
     currentSubscription, isIdVerified, isEmailVerified, isPhoneNumberVerified, 
     emailVerificationToken, profileImage, passwordResetToken, about, origin, 
     gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle, 
-    organization, isStudent, school, major, tags,
+    organization, isStudent, school, major, tags, userName,
     uiPreferences: {
       theme,
     }, 
