@@ -18,10 +18,12 @@
     "googleapis": "^129.0.0",
     "html-to-text": "^9.0.5",
     "http-errors": "~1.6.3",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.1",
     "morgan": "~1.9.1",
     "nodemailer": "^6.9.7",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "unique-username-generator": "^1.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
