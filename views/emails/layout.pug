@@ -1,0 +1,16 @@
+
+include ../variables.pug
+
+html
+  head
+    title My Site - #{title}
+    block scripts
+    style 
+      include ../style.css
+    block styles
+
+  body(style={padding: '0', 'max-width': '450px', margin: '0 auto', 'font-size': '20px', background: secondary, 'font-family': ff, })
+    block content
+    block foot
+      #footer
+        p some footer content

@@ -1,0 +1,10 @@
+
+
+@keyframes confetti {
+  from {
+    transform: scale(.78);
+  }
+  to{
+    transform: scale(1);
+  }
+}

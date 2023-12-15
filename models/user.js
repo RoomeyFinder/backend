@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 const { hashValue } = require("../utils/security")
 const CustomError = require("../utils/error")
+const { generateFromEmail, generateUsername } = require("unique-username-generator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,17 +13,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isEmailVerified: Boolean,
-    isPhoneNumberVerified: Boolean,
-    userName: {
-      type: String,
-      unique: true,
-      trim: true,
-      collation: {
-        locale: "en",
-        strength: 2,
-      },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
     },
+    isPhoneNumberVerified: Boolean,
     profileImage: {
       type: String,
       default: "",
@@ -45,16 +40,16 @@ const userSchema = new mongoose.Schema(
       minlength: 4,
       maxlength: 15,
     },
+    userName: {
+      type: String,
+      unique: true,
+    },
     email: {
       type: String,
+      unique: true,
       required: [true, "Email is required"],
       lowercase: true,
       trim: true,
-      validate: [
-        (value) =>
-          value.length > 0 && /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(value),
-        "Invalid email address",
-      ],
     },
     password: {
       type: String,
@@ -75,13 +70,6 @@ const userSchema = new mongoose.Schema(
         number: String,
       },
       required: [true, "Phone number is required"],
-      lowercase: true,
-      trim: true,
-      validate: [
-        (value) =>
-          value.length > 0 && /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(value),
-        "Invalid email address",
-      ],
     },
     origin: {
       state: String,
@@ -130,12 +118,10 @@ const userSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ["Point"],
-        required: [true, "Invalid location"],
       },
       coordinates: {
         type: [Number],
         index: "2dsphere",
-        required: [true, "Invalid location"],
       },
     },
     lookingFor: {
@@ -165,6 +151,13 @@ const userSchema = new mongoose.Schema(
 )
 
 userSchema.pre("save", function (next) {
+  if (this.userName.length === 0) {
+    this.userName = generateFromEmail(this.emai, 3)
+  }
+  next()
+})
+
+userSchema.pre("save", function (next) {
   if (this.isModified("password")) {
     if (
       this.password.includes(this.firstName) ||
@@ -172,7 +165,7 @@ userSchema.pre("save", function (next) {
     )
       return next(
         new CustomError(
-          "Your password cannot contain your first name or last name"
+          "Your password cannot contain your first name or last name", 400
         )
       )
     else this.password = hashValue(this.password)
