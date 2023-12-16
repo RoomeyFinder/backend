@@ -94,6 +94,7 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
 }
 
 module.exports.deleteOne = async function (filter = {}) {
+  console.log(filter)
   return await User.findOneAndDelete(filter)
 }
 

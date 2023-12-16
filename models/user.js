@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
-const { hashValue } = require("../utils/security")
 const CustomError = require("../utils/error")
-const { generateFromEmail, generateUsername } = require("unique-username-generator");
+const { generateFromEmail } = require("unique-username-generator");
+const bcrypt = require("bcryptjs")
 
 const userSchema = new mongoose.Schema(
   {
@@ -100,9 +100,15 @@ const userSchema = new mongoose.Schema(
       },
     },
     hasPets: Boolean,
-    pets: [String],
+    pets: {
+      type: [String],
+      default: []
+    },
     hasAllergies: Boolean,
-    allergies: [String],
+    allergies: {
+      type: [String],
+      default: []
+    },
     budget: Number,
     jobTitle: String,
     organization: String,
@@ -151,13 +157,13 @@ const userSchema = new mongoose.Schema(
 )
 
 userSchema.pre("save", function (next) {
-  if (this.userName.length === 0) {
-    this.userName = generateFromEmail(this.emai, 3)
+  if (!this.userName || this.userName.length === 0) {
+    this.userName = generateFromEmail(this.email, 3)
   }
   next()
 })
 
-userSchema.pre("save", function (next) {
+userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     if (
       this.password.includes(this.firstName) ||
@@ -168,7 +174,10 @@ userSchema.pre("save", function (next) {
           "Your password cannot contain your first name or last name", 400
         )
       )
-    else this.password = hashValue(this.password)
+    else{
+      const salt = await bcrypt.genSalt(10)
+      this.password = await bcrypt.hash(this.password, salt);
+    }
   }
   next()
 })
