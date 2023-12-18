@@ -9,7 +9,7 @@ dotenv.config({
   path: "./.env",
 })
 
-const isDev = process.env.NODE_ENV === "dev"
+const isDev = process.env.NODE_ENV === "dev" || process.env.NODE_ENV === "test"
 const OAuth2 = google.auth.OAuth2
 const oauth2Client = new OAuth2(
   process.env.OAUTH_CLIENTID,
@@ -108,7 +108,8 @@ class EmailSender {
           ...this.msg,
           html: await email.render(this.template, this.options),
         },
-      }).then((...res) => console.log(res)).catch((err) => console.log(err))
+      })
+      .then(() => { }).catch((err) => { })
     } else {
       this.generateTxtAndHTML()
       return new Promise((resolve, reject) => {

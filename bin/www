@@ -26,11 +26,12 @@ function startServer() {
     console.log("Listening on port: ", port)
   })
 }
+console.log(process.env.CONNECTION_STRING, "here")
 
 mongoose.set("strictQuery", false)
 mongoose
   .connect(
-    process.env.CONNECTION_STRING.replace("<password>", process.env.DB_PASSWORD)
+    process.env.CONNECTION_STRING.replace("<password>", process.env.DB_PASSWORD).replace("<db>", process.env.DB_NAME || "dev")
   )
   .then(() => {
     startServer()
@@ -73,3 +74,5 @@ function onListening() {
   debug("Listening on " + bind)
   console.log("listening on " + bind)
 }
+
+module.exports = server
