@@ -17,12 +17,8 @@ jobs:
       - run:
           name: "Say hello"
           command: "echo Hello, World!"
-    steps:
-      - run:
           name: "Build"
           command: npm install
-    steps:
-      - run:
           name: "Tests"
           command: npm run test
 
