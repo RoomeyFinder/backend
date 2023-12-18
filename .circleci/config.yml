@@ -4,10 +4,44 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.2
 jobs:
+  create-envfile:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Make envfile
+      uses: SpicyPizza/create-envfile@v2.0
+      with:
+        envkey_API_KEY: ${{ secrets.API_KEY }}
+        envkey_CLIENT_URL: ${{ secrets.CLIENT_URL }}
+        envkey_CLOUDNARY_API_KEY: ${{ secrets.CLOUDNARY_API_KEY }}
+        envkey_CLOUDNARY_API_SECRET: ${{ secrets.CLOUDNARY_API_SECRET }}
+        envkey_CLOUDNARY_NAME: ${{ secrets.CLOUDNARY_NAME }}
+        envkey_CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
+        envkey_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        envkey_DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        envkey_EMAIL_PASSWORD_PROD: ${{ secrets.EMAIL_PASSWORD_PROD }}
+        envkey_EMAIL_USERNAME_PROD: ${{ secrets.EMAIL_USERNAME_PROD }}
+        envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        envkey_OAUTH_CLIENTID: ${{ secrets.OAUTH_CLIENTID }}
+        envkey_OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+        envkey_OAUTH_REFRESH_TOKEN: ${{ secrets.OAUTH_REFRESH_TOKEN }}
+        envkey_REDIRECT_URL: ${{ secrets.REDIRECT_URL }}
+        envkey_NODE_ENV: ${{ secrets.NODE_ENV }}
+        directory: ./
+        file_name: .env
+        fail_on_empty: false
+        sort_keys: false
+
   build_and_test: # this can be any name you choose
     executor: node/default # use the default executor defined within the orb
     steps:
       - checkout
+      - run:
+          name: "Setup Env"
+          environment:
+          command: echo 'export MY_ENV_VAR="FOO"' >> "$BASH_ENV"
+      - run: # print the name of the branch we're on
+          name: "What branch am I on?"
+          command: echo ${CIRCLE_BRANCH}
       - node/install-packages:
           pkg-manager: npm
       - run:
@@ -25,4 +59,5 @@ workflows:
   test:
     # List of jobs that will run
     jobs:
+      - create-envfile
       - build_and_test
