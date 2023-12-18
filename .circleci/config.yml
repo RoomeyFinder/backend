@@ -7,13 +7,13 @@ jobs:
     docker:
      - image: cimg/base:stable
     steps:
-      - run: echo "Say hello to YAML!"
+      - run: npm install && echo "Say hello to YAML!"
   # Job two with a unique name
   say_goodbye:
     docker:
      - image: cimg/base:stable
     steps:
-      - run: echo "Say goodbye to YAML!"
+      - run: npm run test
 
 workflows:
   # Name of workflow
