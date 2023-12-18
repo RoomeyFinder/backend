@@ -13,5 +13,5 @@ module.exports.routeTryCatcher = function(asyncFn){
 }
 
 module.exports.sendResponse = function(req, res, next){
-  res.status(req.response.status || 500).json(req.response || { message: "error"})
+  res.status(req.response.statusCode || 500).json(req.response || { status: "error"})
 }
