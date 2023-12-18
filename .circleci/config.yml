@@ -18,10 +18,13 @@ jobs:
           name: "Say hello"
           command: "echo Hello, World!"
     steps:
-      - checkout
+      - run:
+          name: "Build"
+          command: npm install
+    steps:
       - run:
           name: "Tests"
-          command: npm install && npm run test
+          command: npm run test
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
