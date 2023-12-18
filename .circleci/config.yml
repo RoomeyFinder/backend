@@ -15,7 +15,6 @@ jobs:
           command: |
             touch .env
             echo $secrets.API_KEY
-            echo ${{ secrets.API_KEY }}
             echo "here"
       - run:
           command: npm install
