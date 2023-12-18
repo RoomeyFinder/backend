@@ -2,7 +2,7 @@ const express = require("express")
 const path = require("path")
 const cookieParser = require("cookie-parser")
 const logger = require("morgan")
-// const globalErrorHandler = require("./middlewares/error")
+const globalErrorHandler = require("./middlewares/error")
 const CustomError = require("./utils/error")
 const indexRouter = require("./routes/index")
 const usersRouter = require("./routes/users")
@@ -69,6 +69,6 @@ app.all("*", (req, _, next) => {
     )
   )
 })
-// app.use(globalErrorHandler)
+app.use(globalErrorHandler)
 
 module.exports = app
