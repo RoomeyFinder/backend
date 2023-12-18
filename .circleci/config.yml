@@ -1,24 +1,28 @@
 # CircleCI configuration file
 version: 2.1
 
+orbs:
+  node: circleci/node@5.0.2
 jobs:
-  # Job one with a unique name
-  say_hello:
-    docker:
-     - image: cimg/base:stable
+  build_and_test: # this can be any name you choose
+    executor: node/default # use the default executor defined within the orb
     steps:
-      - run: npm install && echo "Say hello to YAML!"
-  # Job two with a unique name
-  say_goodbye:
-    docker:
-     - image: cimg/base:stable
-    steps:
-      - run: npm run test
-
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          command: npm install
+          name: Install dependencies
+      - run:
+          command: npm run test
+          name: Run tests
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
 workflows:
   # Name of workflow
-  hello_and_goodbye:
+  test:
     # List of jobs that will run
     jobs:
-      - say_hello
-      - say_goodbye
+      - build_and_test
