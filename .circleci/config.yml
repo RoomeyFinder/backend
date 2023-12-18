@@ -14,11 +14,25 @@ jobs:
           name: "Setup custom environment variables"
           command: |
             touch .env
-            echo $secrets.API_KEY
-            echo "here"
-      - run:
-          command: npm install
-          name: Install dependencies
+            echo '
+            API_KEY:${ API_KEY }\n
+            CLIENT_URL:${ CLIENT_URL }\n
+            CLOUDNARY_API_KEY:${ CLOUDNARY_API_KEY }\n
+            CLOUDNARY_API_SECRET:${ CLOUDNARY_API_SECRET }\n
+            CLOUDNARY_NAME:${ CLOUDNARY_NAME }\n
+            CONNECTION_STRING:${ CONNECTION_STRING }\n
+            DB_PASSWORD:${ DB_PASSWORD }\n
+            DB_USERNAME:${ DB_USERNAME }\n
+            EMAIL_PASSWORD_PROD:${ EMAIL_PASSWORD_PROD }\n
+            EMAIL_USERNAME_PROD:${ EMAIL_USERNAME_PROD }\n
+            JWT_SECRET:${ JWT_SECRET }\n
+            OAUTH_CLIENTID:${ OAUTH_CLIENTID }\n
+            OAUTH_CLIENT_SECRET:${ OAUTH_CLIENT_SECRET }\n
+            OAUTH_REFRESH_TOKEN:${ OAUTH_REFRESH_TOKEN }\n
+            REDIRECT_URL:${ REDIRECT_URL }\n
+            NODE_ENV:${ NODE_ENV }\n' > .env
+            echo "done"
+            echo ${CIRCLE_BRANCH}
       - run:
           command: npm run test
           name: Run tests
