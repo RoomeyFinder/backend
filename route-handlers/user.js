@@ -4,6 +4,8 @@ const { routeTryCatcher } = require("../utils/routes")
 const { compareValueToHash, createJWT } = require("../utils/security")
 
 module.exports.signup = routeTryCatcher(async function(req, res, next){
+  const existingUser = await findOne({ email: req.body.email })
+  if(existingUser) return next(new CustomError("Email already in use! Try logging in!", 400))
   let user = await create(req.body, false)
   user = await sendVerificationEmail(user)
   await user.save()
@@ -68,8 +70,10 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
     phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob, profileImage, about, origin,
     gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle,
     organization, isStudent, school, major, tags, theme, userName,
-    earliestMoveDate, targetLocation, lookingFor
+    earliestMoveDate, targetLocation, lookingFor,
   } = req.body
+  const existingUserWithUserName = await findOne({ userName })
+  if(existingUserWithUserName) return next(new CustomError("Username is already taken!", 400))
   const user = await updateOne({ _id: req.params.id }, {
     phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob,
     profileImage, about, origin,
