@@ -1,0 +1,62 @@
+[
+  {
+    "firstName": "Lael",
+    "lastName": "Edan",
+    "email": "consectetuer.adipiscing@hotmail.edu",
+    "dob": "2001-12-19T13:39:07.834Z",
+    "longitude": 0,
+    "latitude": 0,
+    "gender": "male",
+    "countryCode": 234,
+    "phoneNumber": 2563403494,
+    "password": "dev1234"
+  },
+  {
+    "firstName": "Uma",
+    "lastName": "Hayes",
+    "email": "magna.duis.dignissim@aol.edu",
+    "dob": "2001-12-19T13:39:07.834Z",
+    "longitude": 0,
+    "latitude": 0,
+    "gender": "male",
+    "countryCode": 234,
+    "phoneNumber": 2852122606,
+    "password": "dev1234"
+  },
+  {
+    "firstName": "Zenaida",
+    "lastName": "Hedley",
+    "email": "donec@google.ca",
+    "dob": "2001-12-19T13:39:07.834Z",
+    "longitude": 0,
+    "latitude": 0,
+    "gender": "female",
+    "countryCode": 234,
+    "phoneNumber": 6276642054,
+    "password": "dev1234"
+  },
+  {
+    "firstName": "Frances",
+    "lastName": "Lev",
+    "email": "eros.non.enim@hotmail.edu",
+    "dob": "2001-12-19T13:39:07.834Z",
+    "longitude": 0,
+    "latitude": 0,
+    "gender": "female",
+    "countryCode": 234,
+    "phoneNumber": 4507821401,
+    "password": "dev1234"
+  },
+  {
+    "firstName": "Claire",
+    "lastName": "Thane",
+    "email": "orci.quis.lectus@google.couk",
+    "dob": "2001-12-19T13:39:07.834Z",
+    "longitude": 0,
+    "latitude": 0,
+    "gender": "male",
+    "countryCode": 234,
+    "phoneNumber": 4812917723,
+    "password": "dev1234"
+  }
+]
