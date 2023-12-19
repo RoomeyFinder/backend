@@ -12,5 +12,9 @@ module.exports.dropDBAndDisconnect = async function(){
 }
 
 module.exports.dropCollection = async function(collection){
-  await mongoose.connection.dropCollection(collection)
+  try{
+    await mongoose.connection.dropCollection(collection)
+  }catch(err){
+    if(!err.message.includes("ns not found")) throw new Error(err.message)
+  }
 }
