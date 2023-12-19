@@ -64,18 +64,18 @@ module.exports.findOne = async function (filter = {}) {
 
 module.exports.updateOne = async function (filter = {}, update = {}, options = { new: true }) {
   const { 
-    phoneNumber, countryCode, longitude, latitude,firstName, lastName, dob,
-    currentSubscription, isIdVerified, isEmailVerified, isPhoneNumberVerified, 
-    emailVerificationToken, profileImage, passwordResetToken, about, origin, 
+    phoneNumber, countryCode, longitude, latitude,firstName, lastName, dob, profileImage, about, origin, 
     gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle, 
-    organization, isStudent, school, major, tags, theme, userName
+    organization, isStudent, school, major, tags, theme, userName,
+    earliestMoveDate, targetLocation, lookingFor
   } = update
   return await User.findOneAndUpdate(filter, {
     firstName, lastName, dob,
-    currentSubscription, isIdVerified, isEmailVerified, isPhoneNumberVerified, 
-    emailVerificationToken, profileImage, passwordResetToken, about, origin, 
-    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle, 
-    organization, isStudent, school, major, tags, userName,
+    profileImage, about, gender, address, 
+    hasPets, pets, hasAllergies, allergies, 
+    budget, jobTitle, organization, isStudent, 
+    school, major, tags, userName, 
+    earliestMoveDate, lookingFor,
     uiPreferences: {
       theme,
     }, 
@@ -86,11 +86,22 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
         coordinates: [longitude, latitude]
       }
     } : {}),
+    ...(targetLocation?.longitude && targetLocation?.latitude ? 
+    {
+        targetLocation: {
+        type: "Point",
+        coordinates: [targetLocation.longitude, targetLocation.latitude]
+      }
+    } : {}),
     phone: {
       countryCode,
       number: phoneNumber
+    },
+    origin: {
+      state: origin?.state,
+      country: origin?.country
     }
-  }, options )
+  }, options)
 }
 
 module.exports.deleteOne = async function (filter = {}) {
