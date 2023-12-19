@@ -4,7 +4,6 @@ const { expect } = require("@jest/globals")
 const { connectDB, dropDBAndDisconnect, dropCollection } = require("./db");
 const { signupDefaultUser, login, verifyEmail, } = require("./auth.utils");
 const { seedUsers } = require("./seed");
-const users = require("./seeds/users.json")
 
 require("./db")
 require("dotenv").config();
