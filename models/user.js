@@ -183,22 +183,6 @@ userSchema.pre("save", async function (next) {
 })
 
 userSchema.pre("save", function (next) {
-  const petsError =
-    this.hasPets === true && this.pets.length === 0 && "Please specify pet(s)"
-  const allergiesError =
-    this.hasAllergies === true &&
-    this.allergies.length === 0 &&
-    "Please specify allergies"
-
-  if (allergiesError || petsError)
-    return next(
-      new CustomError(`${allergiesError || ""}\n ${petsError || ""}`),
-      400
-    )
-  return next()
-})
-
-userSchema.pre("save", function (next) {
   if (this.isStudent) {
     const schoolError = this.school.length === 0 && "Please specify school"
     const majorError = this.major.length === 0 && "Please specify major"
@@ -222,9 +206,10 @@ userSchema.pre("save", function (next) {
     ((!this.isStudent && this.jobTitle && this.organization) ||
       (this.isStudent && this.school && this.major)) &&
     this.earliestMoveDate &&
-    this.targetLocation &&
-    this.lookingFor
-
+    this.lookingFor &&
+    this.phone.number &&
+    this.phone.countryCode &&
+    this.isEmailVerified ? true : false
   return next()
 })
 
