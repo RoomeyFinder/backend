@@ -58,6 +58,13 @@ const userSchema = new mongoose.Schema(
     dob: {
       type: Date,
       required: [true, "Birthday is required"],
+      validate: {
+        validator: function (value) {
+          const dob = new Date(value)
+          return new Date(Date.now()).getFullYear() - dob.getFullYear() >= 15
+        },
+        message: "You must be above 14 years of age!"
+      }
     },
     about: {
       type: String,
@@ -153,6 +160,7 @@ const userSchema = new mongoose.Schema(
       virtuals: true,
     },
     timestamps: true,
+    validateBeforeSave: true
   }
 )
 
