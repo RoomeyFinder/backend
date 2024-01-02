@@ -2,12 +2,17 @@ const mongoose = require("mongoose")
 
 const listingSchema = new mongoose.Schema(
   {
-    coverImage: {
+    idealRoommateDescription: {
       type: String,
-      required: [true, "Please provide cover image"],
+      required: [true, "Please specify the description of your ideal roommate"],
+      maxlength: 120,
     },
-    additionalImages: {
+    photos: {
       type: [String],
+      validate: function(value){
+        return [value.length < 3, "A minimum of 3 photos must be provided"]
+      },
+      required: [true, "Photos must be provided"]
     },
     owner: {
       type: mongoose.Types.ObjectId,
@@ -41,7 +46,7 @@ const listingSchema = new mongoose.Schema(
     },
     rentDuration: {
       type: String,
-      enum: ["annual", "biannual", "quarterly", "monthly"],
+      enum: ["annually", "biannually", "quarterly", "monthly"],
     },
     currentOccupantsCount: {
       type: Number,
@@ -60,6 +65,18 @@ const listingSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    tags: {
+      type: [String],
+      enum: []
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isBoosted: {
+      type: Boolean,
+      default: false,
+    }
   },
   {
     toObject: {
