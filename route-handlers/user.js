@@ -74,13 +74,6 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
   } = req.body
   const existingUserWithUserName = await findOne({ userName })
   if(existingUserWithUserName) return next(new CustomError("Username is already taken!", 400))
-  const user = await updateOne({ _id: req.params.id }, {
-    phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob,
-    profileImage, about, origin,
-    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle,
-    organization, isStudent, school, major, tags, 
-    theme, userName, earliestMoveDate, lookingFor, targetLocation
-  })
   const petsError =
     ((hasPets === true && pets.length === 0 ) ||
     (hasPets === false && pets.length > 0)) && "Please specify pet(s)"
@@ -90,6 +83,13 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
       hasAllergies === false && allergies.length > 0) && "Please specify allergies"
   if (allergiesError || petsError)
     return next(new CustomError(`${allergiesError || ""}\n ${petsError || ""}`, 400))
+  const user = await updateOne({ _id: req.params.id }, {
+    phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob,
+    profileImage, about, origin,
+    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle,
+    organization, isStudent, school, major, tags,
+    theme, userName, earliestMoveDate, lookingFor, targetLocation
+  })
   req.response = {
     user: await user.save(),
     statusCode: 200,
