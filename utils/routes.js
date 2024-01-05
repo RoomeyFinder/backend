@@ -1,6 +1,9 @@
 const CustomError = require("./error")
 
-
+module.exports.attachImagesPathToReq = (imagesPath) => function (req, res, next){
+  req.imagesPath = imagesPath
+  next()
+}
 module.exports.routeTryCatcher = function(asyncFn){
   return async function(req, res, next) {
     try{
