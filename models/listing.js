@@ -38,6 +38,7 @@ const listingSchema = new mongoose.Schema(
         streetAddress: String,
         city: String,
         state: String,
+        country: String,
       },
     },
     rentAmount: {
@@ -65,17 +66,13 @@ const listingSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    tags: {
+    features: {
       type: [String],
       enum: []
     },
     isActive: {
       type: Boolean,
       default: true,
-    },
-    isBoosted: {
-      type: Boolean,
-      default: false,
     }
   },
   {
