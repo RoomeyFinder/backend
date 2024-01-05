@@ -26,7 +26,6 @@ function startServer() {
     console.log("Listening on port: ", port)
   })
 }
-console.log(process.env.CONNECTION_STRING, "here")
 
 mongoose.set("strictQuery", false)
 mongoose
