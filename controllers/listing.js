@@ -1,6 +1,5 @@
 const Listing = require("../models/listing");
 const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
-const EmailSender = require("../services/email")
 
 module.exports.create = async function (data = {}, save = false) {
   const { 
@@ -20,11 +19,8 @@ module.exports.create = async function (data = {}, save = false) {
   const expireAt = new Date(Date.now())
   expireAt.setFullYear(expireAt.getFullYear() + 1)
 
-  let newListing = new User({
-    currentLocation: {
-      type: "Point",
-      coordinates: [longitude, latitude]
-    },
+  let newListing = new Listing({
+    location: formatLocation(longitude, latitude),
     idealRoommateDescription,
     photos,
     owner,
@@ -54,21 +50,20 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
   const {
     idealRoommateDescription,
     photos,
-    owner,
     isStudioApartment,
     numberOfBedrooms,
-    longitude, latitude,
+    longitude, 
+    latitude,
     address,
     rentAmount,
     rentDuration,
     currentOccupancyCount,
     description,
-    tags,
+    features,
   } = update
-  return await User.findOneAndUpdate(filter, {
+  return await Listing.findOneAndUpdate(filter, {
     idealRoommateDescription,
     photos,
-    owner,
     isStudioApartment,
     numberOfBedrooms,
     address,
@@ -76,19 +71,19 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
     rentDuration,
     currentOccupancyCount,
     description,
+    features,
     isActive,
-    ...(longitude && latitude ?
-      {
-        location: {
-          type: "Point",
-          coordinates: [longitude, latitude]
-        }
-      } : {}),
+    location: formatLocation(longitude, latitude)
   }, options)
 }
 
 module.exports.deleteOne = async function (filter = {}) {
-  return await User.findOneAndDelete(filter)
+  return await Listing.findOneAndDelete(filter)
 }
 
-
+function formatLocation(lng, lat) {
+  return ({
+    type: "Point",
+    coordinates: [Number(lng), Number(lat)]
+  })
+}
