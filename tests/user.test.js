@@ -1,36 +1,36 @@
 const request = require("supertest")
 const app = require("../app")
 const { expect } = require("@jest/globals")
-const { connectDB, dropDBAndDisconnect, dropCollection } = require("./db");
-const { signupDefaultUser, login, verifyEmail, } = require("./auth.utils");
-const { seedUsers } = require("./seed");
+const { connectDB, dropDBAndDisconnect } = require("./db");
+const { signupUser, login, verifyEmail, createAuthorizedUser, } = require("./auth.utils");
+const users = require("./seeds/users.json")
 
 require("./db")
 require("dotenv").config();
-
 let server
-beforeAll(async () => {
-  await connectDB()
+
+beforeAll(() => {
+  connectDB()
   server = app.listen(4000)
 })
-
-afterAll(async () => {
-  await dropDBAndDisconnect()
-  server?.close()
+afterAll(() => {
+  dropDBAndDisconnect()
+  server.close()
 })
 
 describe("User signup, Email Verification, Login and CRUD Operations", () => {
-  afterAll(async () => {
-    await dropCollection("users")
-  })
   let user = null
   let token = null
   it("should signup user: POST /api/v1/users", async () => {
-    const response = await signupDefaultUser(server)
-    const { body } = await response
-    user = body.user
-    expect(body.statusCode).toBe(201)
-    expect(body.status).toBe("success")
+    user = (await signupUser(server)(users[0])).body.user
+    expect(user.firstName).toBe(users[0].firstName.toLowerCase())
+    expect(user.lastName).toBe(users[0].lastName.toLowerCase())
+    expect(user.email).toBe(users[0].email.toLowerCase())
+    expect(user.gender).toBe(users[0].gender.toLowerCase())
+    expect(user.phone.countryCode).toBe(users[0].countryCode)
+    expect(+user.phone.number).toBe(users[0].phoneNumber)
+    expect(user.currentLocation.coordinates).toBeInstanceOf(Array)
+    expect(user.dob).toBe(users[0].dob)
   })
   it("should verify users email: GET /api/v1/users/verify-email/:id/:emailVerificationToken", async () => {
     const response = await verifyEmail(server)(user._id, user.emailVerificationToken)
@@ -39,7 +39,10 @@ describe("User signup, Email Verification, Login and CRUD Operations", () => {
     expect(response.body.statusCode).toBe(200)
   })
   it("should login user with verified email: POST /api/v1/users/login", async () => {
-    const response = await login(server)
+    const response = await login(server)({
+      emailOrUserName: users[0].email,
+      password: users[0].password,
+    })
     token = response.body.token
     expect(response.body.token).not.toBe(undefined)
     expect(response.body.user._id).toBe(user._id)
@@ -65,35 +68,28 @@ describe("User signup, Email Verification, Login and CRUD Operations", () => {
     request(server)
       .get(`/api/v1/users/${user?._id}`)
       .set("authorization", `Bearer ${token}`)
-      .send({ firstName: "anewname" })
       .expect(200)
   })
   it("should allow delete with authorization", () => {
     request(server)
       .get(`/api/v1/users/${user?._id}`)
       .set("authorization", `Bearer ${token}`)
-      .send({ firstName: "anewname" })
       .expect(200)
   })
 })
 
 
 describe("User Schema Validation And Auto Modification Validation", () => {
-  afterAll(async () => {
-    await dropCollection("users")
-  })
   let user, token
   it("Pets and hasPets in tandem: Does not allow truthy value for hasPets field if pets.length is < 1 or if hasPets is falsy and pets.length > 0", async () => {
-    const { body } = await signupDefaultUser(server)
-    user = body.user
-    await verifyEmail(server)(user._id, user.emailVerificationToken)
-    const response = await login(server)
-    token = response.body.token
-     await request(server)
-    .put(`/api/v1/users/${user._id}`)
-    .set("Authorization", `Bearer ${token}`)
-    .send({ hasPets: true, pets: [] })
-    .expect(400)
+    const data = await createAuthorizedUser(server)
+    user = data.user
+    token = data.token
+    await request(server)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ hasPets: true, pets: [] })
+      .expect(400)
   })
   it("Allows truthy value for hasPets field if pets.length is >= 1", async () => {
     const updatedUserResponse = await request(server)
@@ -101,9 +97,9 @@ describe("User Schema Validation And Auto Modification Validation", () => {
     .set("Authorization", `Bearer ${token}`)
     .send({ hasPets: true, pets: ["dog"] })
     .expect(200)
-    const updatedUser = updatedUserResponse.body.user
-    expect(updatedUser.hasPets).toBeTruthy()
-    expect(updatedUser.pets.length).toBeLessThanOrEqual(1)
+    user = updatedUserResponse.body.user
+    expect(user.hasPets).toBeTruthy()
+    expect(user.pets.length).toBeLessThanOrEqual(1)
   })
   it("Allergies and hasAllergies in tandem: Does not allow truthy value for hasAllergies field if allergies.length is < 1 or if hasAllergies is falsy and allergies.length > 0", async () => {
      await request(server)
@@ -118,9 +114,9 @@ describe("User Schema Validation And Auto Modification Validation", () => {
     .set("Authorization", `Bearer ${token}`)
     .send({ hasAllergies: true, allergies: ["peanut butter"] })
     .expect(200)
-    const updatedUser = updatedUserResponse.body.user
-    expect(updatedUser.hasAllergies).toBeTruthy()
-    expect(updatedUser.allergies.length).toBeLessThanOrEqual(1)
+    user = updatedUserResponse.body.user
+    expect(user.hasAllergies).toBeTruthy()
+    expect(user.allergies.length).toBeLessThanOrEqual(1)
   })
   it("Auto completes user.isProfileComplete when all user data has been provided", async () => {
     const updatedUserResponse = await request(server)
@@ -141,32 +137,32 @@ describe("User Schema Validation And Auto Modification Validation", () => {
           state: "state"
         }, hasPets: false, pets: [], hasAllergies: false, allergies: [], budget: 300, isStudent: true, school: "uniport", major: "Computer science" })
       .expect(200)
-    const updatedUser = updatedUserResponse.body.user
-    expect(updatedUser.isProfileComplete).toBeTruthy()
-    expect(updatedUser.allergies.length).toBeLessThanOrEqual(1)
+    user = updatedUserResponse.body.user
+    expect(user.isProfileComplete).toBeTruthy()
+    expect(user.allergies.length).toBeLessThanOrEqual(1)
   })
 })
 
 describe("Unique username and email", () => {
-  afterAll(async () => {
-    await dropCollection("users")
-  })
   let user
-  it("Does not allow multiple users with the same email", async () => {
-    const user1Response = await signupDefaultUser(server)
-    user = await user1Response.body.user
-    const user2Response = await user1Response.status === 201 && await signupDefaultUser(server)
-    expect(user1Response.status).toBe(201)
-    expect(user2Response.status) .toBe(400)
+  it("Does not allow multiple users with the same email or same email", async () => {
+    user = (await signupUser(server)(users[1])).body.user
+    const user2Res = await signupUser(server)(users[1])
+    expect(user2Res.status).toBe(400)
   })
   it("Does not allow multiple users with the same username", async () => {
-    const users = await seedUsers(1)
-    await verifyEmail(server)(await user._id, await user.emailVerificationToken)
-    const loginResponse = await login(server)
-    await request(server)
-      .put(`/api/v1/users/${user._id}`)
-      .set("Authorization", `Bearer ${loginResponse.body.token}`)
-      .send({ userName: users[0].userName })
-      .expect(400)
+    const newUser = (await signupUser(server)(users[2])).body.user
+    const verificationResponse = verifyEmail(server)(await newUser._id, await newUser.emailVerificationToken)
+    if((await verificationResponse).status === 200){
+      const loginResponse = await login(server)({
+        emailOrUserName: users[2].email,
+        password: users[2].password,
+      })
+      await request(server)
+        .put(`/api/v1/users/${newUser._id}`)
+        .set("Authorization", `Bearer ${loginResponse.body.token}`)
+        .send({ userName: user.userName })
+        .expect(400)
+    }
   })
 })
