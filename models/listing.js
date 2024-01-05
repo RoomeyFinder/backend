@@ -8,10 +8,16 @@ const listingSchema = new mongoose.Schema(
       maxlength: 120,
     },
     photos: {
-      type: [String],
-      validate: function(value){
-        return [value.length < 3, "A minimum of 3 photos must be provided"]
-      },
+      type: [{
+        asset_id: String, 
+        public_id: String, 
+        width: Number, 
+        height: Number, 
+        secure_url: String, 
+        etag: String, 
+        created_at: Date
+      }],
+      validate: [(value) => value.length >= 3 && value.length <= 11, "A minimum of 3 photos must be provided"],
       required: [true, "Photos must be provided"]
     },
     owner: {
@@ -49,7 +55,7 @@ const listingSchema = new mongoose.Schema(
       type: String,
       enum: ["annually", "biannually", "quarterly", "monthly"],
     },
-    currentOccupantsCount: {
+    currentOccupancyCount: {
       type: Number,
       required: [true, "Please specify current number of occupants"],
     },
