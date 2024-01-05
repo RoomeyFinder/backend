@@ -1,11 +1,11 @@
 const request = require("supertest")
 const app = require("../app")
 const { expect } = require("@jest/globals")
-const { connectDB, dropDBAndDisconnect } = require("./db");
-const { signupUser, login, verifyEmail, createAuthorizedUser, } = require("./auth.utils");
+const { connectDB, dropDBAndDisconnect } = require("./utils/db");
+const { signupUser, login, verifyEmail, createAuthorizedUser, } = require("./utils/auth.utils");
 const users = require("./seeds/users.json")
 
-require("./db")
+require("./utils/db")
 require("dotenv").config();
 let server
 
@@ -93,27 +93,27 @@ describe("User Schema Validation And Auto Modification Validation", () => {
   })
   it("Allows truthy value for hasPets field if pets.length is >= 1", async () => {
     const updatedUserResponse = await request(server)
-    .put(`/api/v1/users/${user._id}`)
-    .set("Authorization", `Bearer ${token}`)
-    .send({ hasPets: true, pets: ["dog"] })
-    .expect(200)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ hasPets: true, pets: ["dog"] })
+      .expect(200)
     user = updatedUserResponse.body.user
     expect(user.hasPets).toBeTruthy()
     expect(user.pets.length).toBeLessThanOrEqual(1)
   })
   it("Allergies and hasAllergies in tandem: Does not allow truthy value for hasAllergies field if allergies.length is < 1 or if hasAllergies is falsy and allergies.length > 0", async () => {
-     await request(server)
-    .put(`/api/v1/users/${user._id}`)
-    .set("Authorization", `Bearer ${token}`)
-    .send({ hasAllergies: true, allergies: [] })
-    .expect(400)
+    await request(server)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ hasAllergies: true, allergies: [] })
+      .expect(400)
   })
   it("Allows truthy value for hasAllergies field if allergies.length is >= 1", async () => {
     const updatedUserResponse = await request(server)
-    .put(`/api/v1/users/${user._id}`)
-    .set("Authorization", `Bearer ${token}`)
-    .send({ hasAllergies: true, allergies: ["peanut butter"] })
-    .expect(200)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ hasAllergies: true, allergies: ["peanut butter"] })
+      .expect(200)
     user = updatedUserResponse.body.user
     expect(user.hasAllergies).toBeTruthy()
     expect(user.allergies.length).toBeLessThanOrEqual(1)
@@ -123,10 +123,10 @@ describe("User Schema Validation And Auto Modification Validation", () => {
       .put(`/api/v1/users/${user._id}`)
       .set("Authorization", `Bearer ${token}`)
       .send({
-        phoneNumber: "123456", 
+        phoneNumber: "123456",
         countryCode: "234",
         isEmailVerified: true,
-        dob:"2001-12-19T13:39:07.834Z", profileImage: "", about: "about",
+        dob: "2001-12-19T13:39:07.834Z", profileImage: "", about: "about",
         origin: {
           state: "Rivers", country: "Nigeria"
         },
@@ -135,7 +135,8 @@ describe("User Schema Validation And Auto Modification Validation", () => {
           streetAddress: "street",
           city: "city",
           state: "state"
-        }, hasPets: false, pets: [], hasAllergies: false, allergies: [], budget: 300, isStudent: true, school: "uniport", major: "Computer science" })
+        }, hasPets: false, pets: [], hasAllergies: false, allergies: [], budget: 300, isStudent: true, school: "uniport", major: "Computer science"
+      })
       .expect(200)
     user = updatedUserResponse.body.user
     expect(user.isProfileComplete).toBeTruthy()
@@ -153,7 +154,7 @@ describe("Unique username and email", () => {
   it("Does not allow multiple users with the same username", async () => {
     const newUser = (await signupUser(server)(users[2])).body.user
     const verificationResponse = verifyEmail(server)(await newUser._id, await newUser.emailVerificationToken)
-    if((await verificationResponse).status === 200){
+    if ((await verificationResponse).status === 200) {
       const loginResponse = await login(server)({
         emailOrUserName: users[2].email,
         password: users[2].password,

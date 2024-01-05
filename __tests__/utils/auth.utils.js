@@ -1,6 +1,6 @@
 
 const request = require("supertest")
-const { signupData } = require("./user.features");
+const { signupData } = require("../features/user.features");
 
 const signupUser = (server) => async (userData) => {
   return (await request(server)
