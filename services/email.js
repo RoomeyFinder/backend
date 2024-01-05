@@ -9,7 +9,8 @@ dotenv.config({
   path: "./.env",
 })
 
-const isDev = process.env.NODE_ENV === "dev" || process.env.NODE_ENV === "test"
+const isDev = process.env.NODE_ENV === "dev"
+const isTest = process.env.NODE_ENV === "test"
 const OAuth2 = google.auth.OAuth2
 const oauth2Client = new OAuth2(
   process.env.OAUTH_CLIENTID,
@@ -31,7 +32,7 @@ const accessToken = async () =>
   })
 
 let transporter
-if (process.env.NODE_ENV === "dev") {
+if (process.env.NODE_ENV === "dev" && !isTest) {
   transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST_DEV,
     port: process.env.EMAIL_PORT_DEV,
@@ -98,6 +99,7 @@ class EmailSender {
   }
 
   async sendEmail() {
+    if(isTest) return 
     if (isDev) {
       const email = new Email({
         views: { root: path.join("views", "emails") },
@@ -110,7 +112,7 @@ class EmailSender {
         },
       })
       .then(() => { }).catch((err) => { })
-    } else {
+    } else if(!isDev && !isTest) {
       this.generateTxtAndHTML()
       return new Promise((resolve, reject) => {
         transporter.sendMail(this.msg, (err, info) => {
