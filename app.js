@@ -7,6 +7,8 @@ const CustomError = require("./utils/error")
 const indexRouter = require("./routes/index")
 const usersRouter = require("./routes/users")
 const listingsRouter = require("./routes/listings")
+const bookmarksRouter = require("./routes/bookmarks")
+
 const dotenv = require("dotenv")
 dotenv.config({
   path: path.resolve(__dirname, ".env"),
@@ -62,6 +64,7 @@ app.use("/", indexRouter)
 app.use("/api/v1", indexRouter)
 app.use("/api/v1/users", usersRouter)
 app.use("/api/v1/listings", listingsRouter)
+app.use("/api/v1/bookmarks", bookmarksRouter)
 
 app.all("*", (req, _, next) => {
   next(
