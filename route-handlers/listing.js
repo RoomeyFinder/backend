@@ -72,10 +72,10 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
 })
 
 module.exports.getMultipleListings = routeTryCatcher(async function (req, res, next) {
-  const listiongs = await findMany(req.query)
+  const listings = await findMany(req.query)
   req.response = {
     statusCode: 200,
-    listiongs,
+    listings,
     status: "success"
   }
   return next()
