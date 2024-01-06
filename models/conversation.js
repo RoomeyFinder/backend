@@ -3,6 +3,8 @@ const { User } = require("../models/user")
 
 const conversationSchema = new mongoose.Schema(
   {
+    //isOpen: boolean
+    //
     creator: {
       type: mongoose.Schema.ObjectId,
       ref: "User",

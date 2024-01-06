@@ -2,16 +2,21 @@ const mongoose = require("mongoose")
 
 const bookmarkSchema = new mongoose.Schema(
   {
-    user: {
+    owner: {
       type: mongoose.Types.ObjectId,
-      required: [true, "Please specify user id"],
+      required: [true, "Owner id is required!"],
       ref: 'User'
     },
-    listing: {
+    doc: {
       type: mongoose.Types.ObjectId,
-      required: [true, "Please specify listing id"],
-      ref: 'Listing'
+      required: [true, "Bookmark reference is required!"],
+      refPath: "type"
     },
+    type: {
+      type: String,
+      required: [true, "Type of bookmark is required!"],
+      enum: ["User", "Listing"]
+    }
   },
   {
     toObject: {
