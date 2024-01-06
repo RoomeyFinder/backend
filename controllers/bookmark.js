@@ -2,13 +2,12 @@ const Bookmark = require("../models/bookmark");
 const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
 
 module.exports.createBookmark = async function (data = {}) {
-  const { user, listing } = data
+  const { owner, doc, type } = data
   let bookmark = new Bookmark({
-     user, listing
+     owner, doc, type
   })
   return await bookmark.save()
 }
-
 
 module.exports.findManyBookmarks = async function (query = {}) {
   const bookmarkQuery = new MongooseQueryBuilder(Bookmark, query)
@@ -20,5 +19,5 @@ module.exports.findOneBookmark = async function (filter = {}) {
 }
 
 module.exports.deleteOneBookmark = async function (filter = {}) {
-  return await Listing.findOneAndDelete(filter)
+  return await Bookmark.findOneAndDelete(filter)
 }
