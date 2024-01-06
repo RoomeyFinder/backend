@@ -38,19 +38,12 @@ const updateListing = async (server, listingId, update, token) => {
   return await sendListingRequestWithBody(server, "put", `/api/v1/listings/${listingId}`, update, token)
 }
 
-const sendEmptyBodyRequestWithIdParam = async (server, method, route, token) => {
+const sendEmptyBodyRequest = async (server, method, route, token) => {
   return await request(server)
     [method](route)
     .set("Authorization", token ? `Bearer ${token}` : "")
     .set("Accept", "application/json")
     .expect("Content-Type", /json/)
-}
-
-const getListing = async (server, listingId, token) => {
-  return await sendEmptyBodyRequestWithIdParam(server, "get", `/api/v1/listings/${listingId}`, token)
-}
-const deleteListing = async (server, listingId, token) => {
-  return await sendEmptyBodyRequestWithIdParam(server, "delete", `/api/v1/listings/${listingId}`, token)
 }
 
 module.exports.createListing = function (server, token) {
@@ -77,12 +70,17 @@ module.exports.updateListing = function (server, token) {
 }
 module.exports.getListing = function (server, token) {
   return async function (listingId) {
-    return await getListing(server, listingId, token)
+    return await sendEmptyBodyRequest(server, "get", `/api/v1/listings/${listingId}`, token)
+  }
+}
+module.exports.getMultipleListings = function (server, token) {
+  return async function(){
+    return await sendEmptyBodyRequest(server, "get", "/api/v1/listings", token)
   }
 }
 module.exports.deleteListing = function (server, token) {
   return async function (listingId) {
-    return await deleteListing(server, listingId, token)
+    return await sendEmptyBodyRequest(server, "delete", `/api/v1/listings/${listingId}`, token)
   }
 }
 

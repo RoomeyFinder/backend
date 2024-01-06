@@ -1,5 +1,5 @@
 const path = require('path');
-const { createListing, updateListing, getListing, deleteListing } = require("./utils/listing.utils")
+const { createListing, updateListing, getListing, getMultipleListings, deleteListing } = require("./utils/listing.utils")
 const app = require('../app')
 const { expect } = require('@jest/globals')
 const { connectDB, dropDBAndDisconnect } = require('./utils/db')
@@ -98,6 +98,13 @@ describe("Listing", () => {
     expect(response.status).toBe(200)
     expect(response.body.listing._id).toBeDefined()
     listing = response.body.listing
+  })
+  it("Should get multiple listings", async () => {
+    const response = await getMultipleListings(server, token)()
+    console.log(response.body)
+    expect(response.body.listings).toBeDefined()
+    expect(response.body.listings).toHaveLength(1)
+    expect(response.status).toBe(200)
   })
   it("Should delete a listing", async () => {
     const response = await deleteListing(server, token)(listing._id)
