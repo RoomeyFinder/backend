@@ -1,6 +1,6 @@
 [
   {
-    "idealRoommateDescription": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae enim itaque distinctio, cumque blanditiis modi, nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
+    "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
@@ -8,19 +8,19 @@
     "latitude": 0,
     "numberOfBedrooms": 3,
     "address": {
-      "streetAddress": "",
-      "city": "",
-      "state": "",
-      "country": ""
+      "streetAddress": "street",
+      "city": "city",
+      "state": "state",
+      "country": "country"
     },
     "rentAmount": 150000,
     "rentDuration": "biannually",
-    "currentOccupantsCount": 1,
+    "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
     "features": []
   },
   {
-    "idealRoommateDescription": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae enim itaque distinctio, cumque blanditiis modi, nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
+    "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
@@ -28,19 +28,19 @@
     "latitude": 0,
     "numberOfBedrooms": 3,
     "address": {
-      "streetAddress": "",
-      "city": "",
-      "state": "",
-      "country": ""
+      "streetAddress": "street",
+      "city": "city",
+      "state": "state",
+      "country": "country"
     },
     "rentAmount": 150000,
     "rentDuration": "biannually",
-    "currentOccupantsCount": 1,
+    "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
     "features": []
   },
   {
-    "idealRoommateDescription": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae enim itaque distinctio, cumque blanditiis modi, nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
+    "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
@@ -48,19 +48,19 @@
     "latitude": 0,
     "numberOfBedrooms": 3,
     "address": {
-      "streetAddress": "",
-      "city": "",
-      "state": "",
-      "country": ""
+      "streetAddress": "street",
+      "city": "city",
+      "state": "state",
+      "country": "country"
     },
     "rentAmount": 150000,
     "rentDuration": "biannually",
-    "currentOccupantsCount": 1,
+    "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
     "features": []
   },
   {
-    "idealRoommateDescription": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae enim itaque distinctio, cumque blanditiis modi, nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
+    "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
@@ -68,19 +68,19 @@
     "latitude": 0,
     "numberOfBedrooms": 3,
     "address": {
-      "streetAddress": "",
-      "city": "",
-      "state": "",
-      "country": ""
+      "streetAddress": "street",
+      "city": "city",
+      "state": "state",
+      "country": "country"
     },
     "rentAmount": 150000,
     "rentDuration": "biannually",
-    "currentOccupantsCount": 1,
+    "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
     "features": []
   },
   {
-    "idealRoommateDescription": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae enim itaque distinctio, cumque blanditiis modi, nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
+    "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
@@ -88,14 +88,14 @@
     "latitude": 0,
     "numberOfBedrooms": 3,
     "address": {
-      "streetAddress": "",
-      "city": "",
-      "state": "",
-      "country": ""
+      "streetAddress": "street",
+      "city": "city",
+      "state": "state",
+      "country": "country"
     },
     "rentAmount": 150000,
     "rentDuration": "biannually",
-    "currentOccupantsCount": 1,
+    "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
     "features": []
   }
