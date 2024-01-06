@@ -1,9 +1,10 @@
 const path = require('path');
-const { createListing, updateListing, getListing, getMultipleListings, deleteListing } = require("./utils/listing.utils")
+const { createListing, updateListing } = require("./utils/listing.utils")
 const app = require('../app')
 const { expect } = require('@jest/globals')
 const { connectDB, dropDBAndDisconnect } = require('./utils/db')
 const { createAuthorizedUser } = require("./utils/auth.utils");
+const { sendEmptyBodyRequest } = require("./utils");
 
 
 let server, user, token
@@ -23,14 +24,6 @@ afterAll(async () => {
 })
 describe("Listing", () => {
   let listing = null
-  const nonMandatoryFields = [
-    'owner',
-    'longitude',
-    'latitude',
-    'numberOfBedrooms',
-    'isStudioApartment',
-    'features',
-  ]
   const mandatoryFields = [
     'photos',
     'idealRoommateDescription',
@@ -94,20 +87,19 @@ describe("Listing", () => {
     expect(response.body.listing.photos.length).toBe(4)
   })
   it("Should get a listing", async () => {
-    const response = await getListing(server, token)(listing._id)
+    const response = await sendEmptyBodyRequest(server, "get", `/api/v1/listings/${listing._id}`, token)
     expect(response.status).toBe(200)
     expect(response.body.listing._id).toBeDefined()
     listing = response.body.listing
   })
   it("Should get multiple listings", async () => {
-    const response = await getMultipleListings(server, token)()
-    console.log(response.body)
+    const response = await sendEmptyBodyRequest(server, "get", `/api/v1/listings`, token)
     expect(response.body.listings).toBeDefined()
     expect(response.body.listings).toHaveLength(1)
     expect(response.status).toBe(200)
   })
   it("Should delete a listing", async () => {
-    const response = await deleteListing(server, token)(listing._id)
+    const response = await sendEmptyBodyRequest(server, "delete", `/api/v1/listings/${listing._id}`, token)
     expect(response.status).toBe(200)
   })
 })
