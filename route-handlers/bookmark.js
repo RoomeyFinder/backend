@@ -1,13 +1,13 @@
 const { createBookmark, findOneBookmark, findManyBookmarks, deleteOneBookmark } = require("../controllers/bookmark")
-const CustomError = require("../utils/error")
 const { routeTryCatcher } = require("../utils/routes")
 
 module.exports.createBookmark = routeTryCatcher(async function(req, res, next){
-  let bookmark = await findOneBookmark({ user: req.user._id.toString(), listing: req.listing })
+  let bookmark = await findOneBookmark({ owner: req.user._id.toString(), doc: req.body.doc })
   if(!bookmark) {
     bookmark = await createBookmark({
-      user: req.user._id,
-      listing: req.body.listing 
+      owner: req.user._id,
+      doc: req.body.doc,
+      type: req.body.type 
     })
     await bookmark.save()
   }
@@ -20,32 +20,30 @@ module.exports.createBookmark = routeTryCatcher(async function(req, res, next){
 })
 
 module.exports.getBookmark = routeTryCatcher(async function (req, res, next) {
-  const bookmark = await findOneBookmark({ _id: req.params.id })
   req.response = {
     statusCode: 200,
-    bookmark,
+    bookmark: await findOneBookmark({ _id: req.params.id }),
     status: "success"
   }
   return next()
 })
 
 module.exports.getMultipleBookmarks = routeTryCatcher(async function (req, res, next) {
-  const bookmarks = await findManyBookmarks({
-    ...req.query,
-    user: req.user._id
-  })
   req.response = {
     statusCode: 200,
-    bookmarks,
-    status: "success"
+    status: "success",
+    bookmarks: await findManyBookmarks({
+      ...req.query,
+      owner: req.user._id
+    }),
   }
   return next()
 })
+
 module.exports.deleteBookmark = routeTryCatcher(async function (req, res, next) {
-  const listing = await deleteOneBookmark({ _id: req.params.id, user: req.user._id.toString() })
   req.response = {
     statusCode: 200,
-    listing,
+    bookmark: await deleteOneBookmark({ _id: req.params.id, owner: req.user._id.toString() }),
     status: "success"
   }
   return next()
