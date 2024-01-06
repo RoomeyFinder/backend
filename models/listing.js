@@ -9,15 +9,15 @@ const listingSchema = new mongoose.Schema(
     },
     photos: {
       type: [{
-        asset_id: String, 
-        public_id: String, 
-        width: Number, 
-        height: Number, 
-        secure_url: String, 
-        etag: String, 
+        asset_id: String,
+        public_id: String,
+        width: Number,
+        height: Number,
+        secure_url: String,
+        etag: String,
         created_at: Date
       }],
-      validate: [(value) => value.length >= 3 && value.length <= 11, "A minimum of 3 photos must be provided"],
+      validate: [(value) => value.length >= 3 && value.length <= 10, "A minimum of 3 photos and a maximum of 10"],
       required: [true, "Photos must be provided"]
     },
     owner: {
@@ -46,6 +46,7 @@ const listingSchema = new mongoose.Schema(
         state: String,
         country: String,
       },
+      required: [true, "Address must be provided!"]
     },
     rentAmount: {
       type: Number,
@@ -54,6 +55,7 @@ const listingSchema = new mongoose.Schema(
     rentDuration: {
       type: String,
       enum: ["annually", "biannually", "quarterly", "monthly"],
+      required: [true, "Please specify the rent duration!"]
     },
     currentOccupancyCount: {
       type: Number,
@@ -79,6 +81,7 @@ const listingSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+
     }
   },
   {

@@ -9,7 +9,7 @@ module.exports.routeTryCatcher = function(asyncFn){
     try{
       return await asyncFn(req, res, next)
     }catch(err){
-      console.log(err)
+      process.env.NODE_ENV !== "test" && console.log(err)
       next(new CustomError(err.message, 500))
     }
   }

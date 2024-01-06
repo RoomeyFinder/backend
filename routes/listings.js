@@ -8,8 +8,8 @@ var router = express.Router();
 
 router.get("/",  protectRoute, getMultipleListings, sendResponse)
 router.post("/", attachImagesPathToReq("photos"), protectRoute, multerUpload.any(), getImageUrl, createListing, sendResponse)
-router.get("/:id", protectRoute, getListing, sendResponse)
-router.put("/:id", protectRoute, updateListing, sendResponse)
+router.get("/:id", getListing, sendResponse)
+router.put("/:id", attachImagesPathToReq("photos"), protectRoute, multerUpload.any(), getImageUrl, protectRoute, updateListing, sendResponse)
 router.delete("/:id", protectRoute, deleteListing, sendResponse)
 
 module.exports = router

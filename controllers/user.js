@@ -21,7 +21,7 @@ module.exports.sendVerificationEmail = async function(user) {
         msg, template: "verifyEmail", options
       }).sendEmail()
     } catch (err) {
-      console.log(err)
+      process.env.NODE_ENV !== "test" && console.log(err)
     }
     return user
   }

@@ -5,7 +5,11 @@ const { routeTryCatcher } = require("../utils/routes")
 module.exports.createListing = routeTryCatcher(async function(req, res, next){
   const existingListing = await findOne({ owner: req.user._id.toString() })
   if (existingListing) return next(new CustomError("Cannot create a new Ad. Existing Ad must first be deleted", 400))
-  let listing = await create({...req.body, owner: req.user._id}, false)
+  let listing = await create({ 
+    ...req.body, 
+    owner: req.user._id,
+    address: typeof req.body.address === "string" ? JSON.parse(req.body.address) : req.body.address 
+  }, false)
   await listing.save()
   req.response = {
     listing,
@@ -58,7 +62,7 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
     rentDuration,
     currentOccupancyCount,
     description,
-  })
+  }, { new: true, })
   req.response = {
     listing: await listing.save(),
     statusCode: 200,
