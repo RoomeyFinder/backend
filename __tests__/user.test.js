@@ -133,6 +133,19 @@ describe("User Schema Validation And Auto Modification Validation", () => {
     const updatedUserResponse = await query
     expect(updatedUserResponse.body.user.photos.length).toBe(10)
   })
+  it("Does not allow more than 20 profile tags", async () => {
+    const query = request(server)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+    const tags = [...Array(40).keys()].map(it => it.toString())
+    for (let idx = 0;idx < tags.length;idx++) {
+      query.field("tags", tags[idx])
+    }
+    const updatedUserResponse = await query
+    expect(updatedUserResponse.body.user.tags.length).toBe(20)
+  })
   it("Auto completes user.isProfileComplete when all user data has been provided", async () => {
     const query = request(server)
       .put(`/api/v1/users/${user._id}`)
