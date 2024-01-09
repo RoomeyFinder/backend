@@ -5,7 +5,7 @@ const { connectDB, dropDBAndDisconnect } = require("./utils/db");
 const { signupUser, login, verifyEmail, createAuthorizedUser, } = require("./utils/auth.utils");
 const users = require("./seeds/users.json");
 const { updateData } = require("./features/user.features");
-const { getPhotos } = require("./utils");
+const { getPhotos, sendMultipartBodyRequest } = require("./utils");
 
 require("./utils/db")
 require("dotenv").config();
@@ -134,15 +134,7 @@ describe("User Schema Validation And Auto Modification Validation", () => {
     expect(updatedUserResponse.body.user.photos.length).toBe(10)
   })
   it("Does not allow more than 20 profile tags", async () => {
-    const query = request(server)
-      .put(`/api/v1/users/${user._id}`)
-      .set("Authorization", `Bearer ${token}`)
-      .set("Accept", "application/json")
-      .expect("Content-Type", /json/)
-    const tags = [...Array(40).keys()].map(it => it.toString())
-    for (let idx = 0;idx < tags.length;idx++) {
-      query.field("tags", tags[idx])
-    }
+    const query = await sendMultipartBodyRequest(server, "put", `/api/v1/users/${user._id}`, { tags: [...Array(40).keys()].map(it => it.toString()) }, token)
     const updatedUserResponse = await query
     expect(updatedUserResponse.body.user.tags.length).toBe(20)
   })
