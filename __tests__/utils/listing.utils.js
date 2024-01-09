@@ -2,6 +2,7 @@
 const listingsJson = require("../seeds/listings.json")
 const request = require('supertest')
 const { getPhotos } = require(".")
+const path = require("node:path")
 
 const sendListingRequestWithBody = async (server, method, route, data, token) => {
   if (data.photos) {
@@ -11,14 +12,15 @@ const sendListingRequestWithBody = async (server, method, route, data, token) =>
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
     Object.keys(data).forEach(key => {
-      if(key !== "photos"){
-        requestObj.field(key, data[key])
-      }
+      if(Array.isArray(data[key])){
+        for (let idx = 0;idx < data[key].length;idx++) {
+          const value = data[key][idx];
+          if(value !== path.basename(value))
+            requestObj.attach(key, value)
+          else requestObj.field(key, value)
+        }
+      }else requestObj.field(key, data[key])
     })
-    for (let idx = 0; idx < data.photos.length; idx++) {
-      const photo = data.photos[idx];
-      requestObj.attach("photos", photo)
-    }
     return await requestObj
   } else {
     return await request(server)[method](route)

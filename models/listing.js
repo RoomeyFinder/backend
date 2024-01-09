@@ -84,7 +84,8 @@ const listingSchema = new mongoose.Schema(
     },
     features: {
       type: [String],
-      enum: []
+      // enum: [],
+      validate: [(value) => value.length <= 20, "A maximum of 20 features"],
     },
     isActive: {
       type: Boolean,

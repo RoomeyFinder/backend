@@ -17,7 +17,8 @@ module.exports.create = async function (data = {}, save = false) {
     rentAmount,
     rentDuration,
     currentOccupancyCount,
-    description 
+    description,
+    features,
   } = data
 
   const expireAt = new Date(Date.now())
@@ -38,6 +39,7 @@ module.exports.create = async function (data = {}, save = false) {
     rentDuration,
     currentOccupancyCount,
     description,
+    features
   })
   if (save) return await newListing.save()
   return newListing
@@ -53,7 +55,7 @@ module.exports.findOne = async function (filter = {}) {
   return await Listing.findOne(filter)
 }
 
-module.exports.updateOne = async function (filter = {}, update = {}, options = { new: true }) {
+module.exports.updateOne = async function (filter = {}, update = {}) {
   const allowedPaths = [
     "idealRoommateDescription",
     "photos",
@@ -75,7 +77,7 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
   const listing = await Listing.findOne(filter)
   Object.keys(update).forEach(key => {
     if (allowedPaths.includes(key) && update[key] !== undefined) {
-      if (key !== "longitude" && key !== "latitude" && key !== "photos")
+      if (key !== "longitude" && key !== "latitude" && key !== "photos" && key !== "features")
         listing[key] = update[key]
     }
   })
@@ -84,6 +86,8 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
   }
   if(Array.isArray(update.photos))
     listing.photos = concatToArrayUntilMax(10, listing.photos, update.photos)
+  if(Array.isArray(update.features))
+    listing.features = concatToArrayUntilMax(20, listing.features, update.features)
   return await listing.save()
 }
 

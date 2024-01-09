@@ -73,6 +73,17 @@ describe("Listing", () => {
     expect(response.status).toBe(400)
     expect(response.body.message).toBe("Cannot create a new Ad. Existing Ad must first be deleted")
   })
+  it("Should allow a maximum of 20 features per listing", async () => {
+    const response = await updateListing(server, token)(listing._id, {
+      description: "a new description",
+      features: [...Array(40).keys()].map(it => it.toString())
+    }, 0)
+    expect(response.status).toBe(200)
+    expect(response.body.listing.description).toBe("a new description")
+    expect(response.body.listing.features.length).toBe(20)
+    expect(response.body.listing._id).toBeDefined()
+    listing = response.body.listing
+  })
   it("Should update a listing", async () => {
     const response = await updateListing(server, token)(listing._id, {
       description: "a new description"

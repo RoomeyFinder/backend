@@ -44,7 +44,8 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
     currentOccupancyCount,
     description,
     latitude,
-    longitude
+    longitude,
+    features
   } = req.body
   let apartmentTypeError = null
   if(isStudioApartment === false && numberOfBedrooms === 0) apartmentTypeError = "Please specify the number of bedrooms" 
@@ -71,9 +72,10 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
     city,
     state,
     country,
-  }, { new: true, })
+    features
+  })
   req.response = {
-    listing: await listing.save(),
+    listing,
     statusCode: 200,
     status: "success"
   }
