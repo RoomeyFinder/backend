@@ -1,13 +1,14 @@
 const mongoose = require("mongoose")
 const CustomError = require("../utils/error")
 const { generateFromEmail } = require("unique-username-generator");
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const Interest = require("./interest")
 
 const userSchema = new mongoose.Schema(
   {
-    currentSubscription: {
-      type: mongoose.Types.ObjectId,
-      ref: 'Plan'
+    countOfInterestsLeft: {
+      type: Number,
+      default: 20
     },
     isIdVerified: {
       type: Boolean,
@@ -85,7 +86,7 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       enum: ["male", "female"],
-      required: [true, "Please specify your gender"],
+      required: [true, "Gender is required!"],
     },
     currentLocation: {
       type: {
@@ -163,6 +164,10 @@ const userSchema = new mongoose.Schema(
     validateBeforeSave: true
   }
 )
+
+userSchema.virtual("unseenInterestsRecieved").get(async function () {
+  return await Interest.countDocuments({ doc: this._id, type: "User", seen: false, })
+})
 
 userSchema.pre("save", function (next) {
   if (!this.userName || this.userName.length === 0) {

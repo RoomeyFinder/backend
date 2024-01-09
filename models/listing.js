@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const Interest = require("./interest")
 
 const listingSchema = new mongoose.Schema(
   {
@@ -94,6 +95,10 @@ const listingSchema = new mongoose.Schema(
     timestamps: true,
   }
 )
+
+listingSchema.virtual("unseenInterestsRecieved").get(async function () {
+  return await Interest.countDocuments({ doc: this._id, type: "Listing", seen: false })
+})
 
 listingSchema.path("numberOfBedrooms").required(function () {
   return this.isStudioApartment === false
