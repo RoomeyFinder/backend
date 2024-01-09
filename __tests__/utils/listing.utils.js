@@ -12,9 +12,7 @@ const sendListingRequestWithBody = async (server, method, route, data, token) =>
       .expect("Content-Type", /json/)
     Object.keys(data).forEach(key => {
       if(key !== "photos"){
-        if (key === "address") {
-          requestObj.field(key, JSON.stringify(data[key]))
-        } else requestObj.field(key, data[key])
+        requestObj.field(key, data[key])
       }
     })
     for (let idx = 0; idx < data.photos.length; idx++) {

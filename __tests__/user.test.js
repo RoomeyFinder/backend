@@ -3,7 +3,9 @@ const app = require("../app")
 const { expect } = require("@jest/globals")
 const { connectDB, dropDBAndDisconnect } = require("./utils/db");
 const { signupUser, login, verifyEmail, createAuthorizedUser, } = require("./utils/auth.utils");
-const users = require("./seeds/users.json")
+const users = require("./seeds/users.json");
+const { updateData } = require("./features/user.features");
+const { getPhotos } = require("./utils");
 
 require("./utils/db")
 require("dotenv").config();
@@ -27,8 +29,8 @@ describe("User signup, Email Verification, Login and CRUD Operations", () => {
     expect(user.lastName).toBe(users[0].lastName.toLowerCase())
     expect(user.email).toBe(users[0].email.toLowerCase())
     expect(user.gender).toBe(users[0].gender.toLowerCase())
-    expect(user.phone.countryCode).toBe(users[0].countryCode)
-    expect(+user.phone.number).toBe(users[0].phoneNumber)
+    expect(user.countryCode).toBe(users[0].countryCode)
+    expect(+user.phoneNumber).toBe(users[0].phoneNumber)
     expect(user.currentLocation.coordinates).toBeInstanceOf(Array)
     expect(user.dob).toBe(users[0].dob)
   })
@@ -118,26 +120,34 @@ describe("User Schema Validation And Auto Modification Validation", () => {
     expect(user.hasAllergies).toBeTruthy()
     expect(user.allergies.length).toBeLessThanOrEqual(1)
   })
-  it("Auto completes user.isProfileComplete when all user data has been provided", async () => {
-    const updatedUserResponse = await request(server)
+  it("Does not allow more than 10 profile images", async () => {
+    const query = request(server)
       .put(`/api/v1/users/${user._id}`)
       .set("Authorization", `Bearer ${token}`)
-      .send({
-        phoneNumber: "123456",
-        countryCode: "234",
-        isEmailVerified: true,
-        dob: "2001-12-19T13:39:07.834Z", profileImage: "", about: "about",
-        origin: {
-          state: "Rivers", country: "Nigeria"
-        },
-        earliestMoveDate: new Date(Date.now()), lookingFor: "room",
-        gender: "female", address: {
-          streetAddress: "street",
-          city: "city",
-          state: "state"
-        }, hasPets: false, pets: [], hasAllergies: false, allergies: [], budget: 300, isStudent: true, school: "uniport", major: "Computer science"
-      })
-      .expect(200)
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+    const photos = getPhotos(11)
+    for (let idx = 0;idx < photos.length;idx++) {
+      query.attach("photos", photos[idx])
+    }
+    const updatedUserResponse = await query
+    expect(updatedUserResponse.body.user.photos.length).toBe(10)
+  })
+  it("Auto completes user.isProfileComplete when all user data has been provided", async () => {
+    const query = request(server)
+      .put(`/api/v1/users/${user._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+    Object.keys(updateData).forEach(key => {
+      if(key !== "pet" && key !== "allergies")
+        query.field(key, updateData[key])
+    })
+    const photos = getPhotos(2)
+    for (let idx = 0; idx < photos.length; idx++) {
+      query.attach("photos", photos[idx])
+    }
+    const updatedUserResponse = await query
     user = updatedUserResponse.body.user
     expect(user.isProfileComplete).toBeTruthy()
     expect(user.allergies.length).toBeLessThanOrEqual(1)
