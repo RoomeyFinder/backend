@@ -67,10 +67,7 @@ module.exports.getUser = routeTryCatcher(async function (req, res, next) {
 module.exports.updateUser = routeTryCatcher(async function(req, res, next){
   if(req.params.id !== req.user._id.toString()) return next(new CustomError("Not allowed!", 403))
   const {
-    phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob, profileImage, about, origin,
-    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle,
-    organization, isStudent, school, major, tags, theme, userName,
-    earliestMoveDate, targetLocation, lookingFor,
+    hasPets, pets, hasAllergies, allergies, userName,
   } = req.body
   const existingUserWithUserName = await findOne({ userName })
   if(existingUserWithUserName) return next(new CustomError("Username is already taken!", 400))
@@ -83,15 +80,9 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
       hasAllergies === false && allergies.length > 0) && "Please specify allergies"
   if (allergiesError || petsError)
     return next(new CustomError(`${allergiesError || ""}\n ${petsError || ""}`, 400))
-  const user = await updateOne({ _id: req.params.id }, {
-    phoneNumber, countryCode, longitude, latitude, firstName, lastName, dob,
-    profileImage, about, origin,
-    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle,
-    organization, isStudent, school, major, tags,
-    theme, userName, earliestMoveDate, lookingFor, targetLocation
-  })
+  const user = await updateOne({ _id: req.user._id }, req.body)
   req.response = {
-    user: await user.save(),
+    user: user,
     statusCode: 200,
     status: "success"
   }

@@ -6,6 +6,18 @@ const Interest = require("./interest")
 
 const userSchema = new mongoose.Schema(
   {
+    photos: {
+      type: [{
+        asset_id: String,
+        public_id: String,
+        width: Number,
+        height: Number,
+        secure_url: String,
+        etag: String,
+        created_at: Date
+      }],
+      validate: [(value) => value.length <= 10, "A minimum of 3 photos and a maximum of 10"],
+    },
     countOfInterestsLeft: {
       type: Number,
       default: 20
@@ -19,10 +31,6 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     isPhoneNumberVerified: Boolean,
-    profileImage: {
-      type: String,
-      default: "",
-    },
     emailVerificationToken: String,
     passwordResetToken: String,
     firstName: {
@@ -72,16 +80,19 @@ const userSchema = new mongoose.Schema(
       maxlength: 250,
       default: "",
     },
-    phone: {
-      type: {
-        countryCode: Number,
-        number: String,
-      },
+    phoneNumber: {
+      type: String,
       required: [true, "Phone number is required"],
     },
-    origin: {
-      state: String,
-      country: String,
+    countryCode: {
+      type: Number,
+      required: [true, "Country code is required"]
+    },
+    stateOfOrigin: {
+      type: String,
+    },
+    countryOfOrigin: {
+      type: String
     },
     gender: {
       type: String,
@@ -100,13 +111,9 @@ const userSchema = new mongoose.Schema(
         required: [true, "Invalid location"],
       },
     },
-    address: {
-      type: {
-        streetAddress: String,
-        city: String,
-        state: String,
-      },
-    },
+    currentAddress: String,
+    currentCity: String,
+    currentState: String,
     hasPets: Boolean,
     pets: {
       type: [String],
@@ -126,6 +133,7 @@ const userSchema = new mongoose.Schema(
     tags: {
       type: [String],
       enum: [],
+      validate: [(value) => value.length <= 20, "A maximum of 20 tags"],
     },
     earliestMoveDate: Date,
     targetLocation: {
@@ -138,19 +146,17 @@ const userSchema = new mongoose.Schema(
         index: "2dsphere",
       },
     },
+    targetCity: String,
+    targetState: String,
     lookingFor: {
       type: String,
       enum: ["room", "roommate"],
     },
     isProfileComplete: Boolean,
-    uiPreferences: {
-      type: {
-        theme: {
-          type: String,
-          enum: ["light", "dark"],
-          default: "dark",
-        },
-      },
+    theme: {
+      type: String,
+      enum: ["light", "dark"],
+      default: "dark",
     },
   },
   {
@@ -211,8 +217,8 @@ userSchema.pre("save", function (next) {
 userSchema.pre("save", function (next) {
   this.isProfileComplete =
     this.about.length > 0 &&
-    this.origin.state?.length > 0 &&
-    this.origin.country?.length > 0 &&
+    this.stateOfOrigin.length > 0 &&
+    this.countryOfOrigin.length > 0 &&
     ((this.hasPets && this.pets.length > 0) || !this.hasPets) &&
     ((this.hasAllergies && this.allergies.length > 0) || !this.hasAllergies) &&
     this.budget &&
@@ -220,9 +226,11 @@ userSchema.pre("save", function (next) {
       (this.isStudent && this.school && this.major)) &&
     this.earliestMoveDate &&
     this.lookingFor &&
-    this.phone.number &&
-    this.phone.countryCode &&
-    this.isEmailVerified ? true : false
+    this.phoneNumber &&
+    this.countryCode &&
+    this.isEmailVerified &&
+    this.photos.length >= 1
+     ? true : false 
   return next()
 })
 

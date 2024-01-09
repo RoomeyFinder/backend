@@ -2,6 +2,7 @@ const User = require("../models/user")
 const crypto = require("crypto")
 const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
 const EmailSender = require("../services/email")
+const { formatLocation, concatToArrayUntilMax } = require("../utils")
 
 module.exports.sendVerificationEmail = async function(user) {
   if (!user) return null
@@ -37,16 +38,9 @@ module.exports.create = async function (data = {}, save = false) {
   expireAt.setMonth(expireAt.getMonth() + 1)
   let newUser = new User({
     firstName, lastName, email, password, 
-    dob, gender, countryCode, phoneNumber,
-    currentLocation: {
-      type: "Point",
-      coordinates: [longitude, latitude]
-    },
+    dob, gender, phoneNumber, countryCode,
+    currentLocation: formatLocation(longitude, latitude),
     expireAt,
-    phone: {
-      countryCode,
-      number: phoneNumber
-    }
   })
   if(save) return await newUser.save()
   return newUser
@@ -62,46 +56,55 @@ module.exports.findOne = async function (filter = {}) {
   return await User.findOne(filter)
 }
 
-module.exports.updateOne = async function (filter = {}, update = {}, options = { new: true }) {
-  const { 
-    phoneNumber, countryCode, longitude, latitude,firstName, lastName, dob, profileImage, about, origin, 
-    gender, address, hasPets, pets, hasAllergies, allergies, budget, jobTitle, 
-    organization, isStudent, school, major, tags, theme, userName,
-    earliestMoveDate, targetLocation, lookingFor
+module.exports.updateOne = async function (filter = {}, update = {}) {
+  const user = await User.findOne(filter)
+  if(!user) return user
+  const allowedPaths = [
+    "firstName",
+    "lastName",
+    "dob",
+    "about",
+    "gender",
+    "hasPets",
+    "pets",
+    "hasAllergies",
+    "budget",
+    "jobTitle",
+    "organization",
+    "isStudent",
+    "school",
+    "major",
+    "theme",
+    "userName",
+    "earliestMoveDate",
+    "lookingFor",
+    "targetCity", 
+    "targetState",
+    "currentAddress", 
+    "currentCity", 
+    "currentState",
+    "stateOfOrigin",
+    "countryOfOrigin",
+    "countryCode",
+    "phoneNumber",
+  ]
+  Object.keys(update).forEach(key => {
+    if (allowedPaths.includes(key) && update[key] !== undefined) 
+      user[key] = update[key]
+  })
+  const {  
+    currentLongitude, currentLatitude, tags, targetLongitude, targetLatitude, photos
   } = update
-  return await User.findOneAndUpdate(filter, {
-    firstName, lastName, dob,
-    profileImage, about, gender, address, 
-    hasPets, pets, hasAllergies, allergies, 
-    budget, jobTitle, organization, isStudent, 
-    school, major, tags, userName, 
-    earliestMoveDate, lookingFor,
-    uiPreferences: {
-      theme,
-    }, 
-    ...(longitude && latitude ? 
-    {
-      currentLocation: {
-        type: "Point",
-        coordinates: [longitude, latitude]
-      }
-    } : {}),
-    ...(targetLocation?.longitude && targetLocation?.latitude ? 
-    {
-        targetLocation: {
-        type: "Point",
-        coordinates: [targetLocation.longitude, targetLocation.latitude]
-      }
-    } : {}),
-    phone: {
-      countryCode,
-      number: phoneNumber
-    },
-    origin: {
-      state: origin?.state,
-      country: origin?.country
-    }
-  }, options)
+  if(currentLongitude && currentLatitude)
+    user.currentLocation = formatLocation(currentLongitude, currentLatitude)
+  if(targetLongitude && targetLatitude)
+    user.targetLocation = formatLocation(targetLongitude, targetLatitude)
+  if(Array.isArray(photos))
+    user.photos = concatToArrayUntilMax(10, user.photos, photos)
+  if(Array.isArray(tags))
+    user.tags = concatToArrayUntilMax(20, user.tags, tags)
+
+  return await user.save()
 }
 
 module.exports.deleteOne = async function (filter = {}) {
