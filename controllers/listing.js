@@ -1,5 +1,6 @@
 const Listing = require("../models/listing");
-const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
+const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder");
+const { formatLocation, concatToArrayUntilMax } = require("../utils");
 
 module.exports.create = async function (data = {}, save = false) {
   const { 
@@ -9,7 +10,10 @@ module.exports.create = async function (data = {}, save = false) {
     isStudioApartment,
     numberOfBedrooms,
     longitude, latitude,
-    address,
+    streetAddress,
+    city,
+    state,
+    country,
     rentAmount,
     rentDuration,
     currentOccupancyCount,
@@ -26,7 +30,10 @@ module.exports.create = async function (data = {}, save = false) {
     owner,
     isStudioApartment,
     numberOfBedrooms,
-    address,
+    streetAddress,
+    city,
+    state,
+    country,
     rentAmount,
     rentDuration,
     currentOccupancyCount,
@@ -54,7 +61,10 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
     "numberOfBedrooms",
     "longitude", 
     "latitude",
-    "address",
+    "streetAddress",
+    "city",
+    "state",
+    "country",
     "rentAmount",
     "rentDuration",
     "currentOccupancyCount",
@@ -72,30 +82,11 @@ module.exports.updateOne = async function (filter = {}, update = {}, options = {
   if (update.longitude !== undefined && update.latitude !== undefined) {
     listing[location] = formatLocation(update.longitude, update.latitude)
   }
-  if(Array.isArray(update.photos) && update.photos.length > 0){
-    let photosCount = listing.photos.length
-    if(photosCount <= 9){
-      let maxAppendablePhotos = 10 - photosCount 
-      maxAppendablePhotos = update.photos.length <= maxAppendablePhotos ? update.photos.length : maxAppendablePhotos
-      let photoIdxToAppend = 0
-      while(maxAppendablePhotos > 0){
-        listing.photos = [...listing.photos, update.photos[photoIdxToAppend]]
-        photoIdxToAppend++
-        maxAppendablePhotos--
-      }
-    }
-  }
-    
+  if(Array.isArray(update.photos))
+    listing.photos = concatToArrayUntilMax(10, listing.photos, update.photos)
   return await listing.save()
 }
 
 module.exports.deleteOne = async function (filter = {}) {
   return await Listing.findOneAndDelete(filter)
-}
-
-function formatLocation(lng, lat) {
-  return ({
-    type: "Point",
-    coordinates: [Number(lng), Number(lat)]
-  })
 }

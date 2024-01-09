@@ -40,14 +40,21 @@ const listingSchema = new mongoose.Schema(
         required: [true, "Invalid location"],
       },
     },
-    address: {
-      type: {
-        streetAddress: String,
-        city: String,
-        state: String,
-        country: String,
-      },
-      required: [true, "Address must be provided!"]
+    streetAddress: {
+      type: String,
+      required: [true, "street addresss must be provided!"]
+    },
+    city: {
+      type: String,
+      required: [true, "street addresss must be provided!"]
+    },
+    state: {
+      type: String,
+      required: [true, "street addresss must be provided!"]
+    },
+    country: {
+      type: String,
+      required: [true, "street addresss must be provided!"]
     },
     rentAmount: {
       type: Number,

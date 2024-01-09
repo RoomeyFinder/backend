@@ -8,7 +8,6 @@ module.exports.createListing = routeTryCatcher(async function(req, res, next){
   let listing = await create({ 
     ...req.body, 
     owner: req.user._id,
-    address: typeof req.body.address === "string" ? JSON.parse(req.body.address) : req.body.address 
   }, false)
   await listing.save()
   req.response = {
@@ -36,7 +35,10 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
     owner,
     isStudioApartment,
     numberOfBedrooms,
-    address,
+    streetAddress,
+    city,
+    state,
+    country,
     rentAmount,
     rentDuration,
     currentOccupancyCount,
@@ -57,11 +59,18 @@ module.exports.updateListing = routeTryCatcher(async function(req, res, next){
     owner,
     isStudioApartment,
     numberOfBedrooms,
-    address,
+    streetAddress,
+    city,
+    state,
+    country,
     rentAmount,
     rentDuration,
     currentOccupancyCount,
     description,
+    streetAddress,
+    city,
+    state,
+    country,
   }, { new: true, })
   req.response = {
     listing: await listing.save(),
