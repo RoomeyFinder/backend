@@ -1,11 +1,61 @@
 const mongoose = require("mongoose")
 const Interest = require("./interest")
 
+const requiredPaths = [
+  {
+    path: "idealRoommateDescription",
+    errorMsg: "Please specify the description of your ideal roommate"
+  },
+  {
+    path: "photos",
+    errorMsg: "A minimum of 3 photos and a maximum of 10"
+  },
+  {
+    path: "location.type",
+    errorMsg: "Invalid location"
+  },
+  {
+    path: "location.coordinates",
+    errorMsg: "Invalid location"
+  },
+  {
+    path: "streetAddress",
+    errorMsg: "street addresss must be provided"
+  },
+  {
+    path: "city",
+    errorMsg: "city must be provided"
+  },
+  {
+    path: "state",
+    errorMsg: "state must be provided"
+  },
+  {
+    path: "country",
+    errorMsg: "country must be provided"
+  },
+  {
+    path: "rentAmount",
+    errorMsg: "Please specify the rent amount"
+  },
+  {
+    path: "rentDuration",
+    errorMsg: "Please specify the rent duration"
+  },
+  {
+    path: "currentOccupancyCount",
+    errorMsg: "Please specify current number of occupants"
+  },
+  {
+    path: "description",
+    errorMsg: "Please add a description"
+  },
+
+]
 const listingSchema = new mongoose.Schema(
   {
     idealRoommateDescription: {
       type: String,
-      required: [true, "Please specify the description of your ideal roommate"],
       maxlength: 120,
     },
     photos: {
@@ -18,8 +68,6 @@ const listingSchema = new mongoose.Schema(
         etag: String,
         created_at: Date
       }],
-      validate: [(value) => value.length >= 3 && value.length <= 10, "A minimum of 3 photos and a maximum of 10"],
-      required: [true, "Photos must be provided"]
     },
     owner: {
       type: mongoose.Types.ObjectId,
@@ -32,47 +80,37 @@ const listingSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ["Point"],
-        required: [true, "Invalid location"],
       },
       coordinates: {
         type: [Number],
         index: "2dsphere",
-        required: [true, "Invalid location"],
       },
     },
     streetAddress: {
       type: String,
-      required: [true, "street addresss must be provided!"]
     },
     city: {
       type: String,
-      required: [true, "street addresss must be provided!"]
     },
     state: {
       type: String,
-      required: [true, "street addresss must be provided!"]
     },
     country: {
       type: String,
-      required: [true, "street addresss must be provided!"]
     },
     rentAmount: {
       type: Number,
-      required: [true, "Please specify the rent amount"],
     },
     rentDuration: {
       type: String,
       enum: ["annually", "biannually", "quarterly", "monthly"],
-      required: [true, "Please specify the rent duration!"]
     },
     currentOccupancyCount: {
       type: Number,
-      required: [true, "Please specify current number of occupants"],
     },
     description: {
       type: String,
       maxlength: 250,
-      required: [true, "Please add a description"],
     },
     viewsCount: {
       type: Number,
@@ -90,7 +128,10 @@ const listingSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-
+    },
+    isDraft: {
+      type: Boolean,
+      default: false,
     }
   },
   {
@@ -111,6 +152,17 @@ listingSchema.virtual("unseenInterestsRecieved").get(async function () {
 listingSchema.path("numberOfBedrooms").required(function () {
   return this.isStudioApartment === false
 }, "Please specify the number of bedrooms")
+
+listingSchema.path("photos").validate(function(value){
+  if(this.isDraft === true) return value.length <= 10 
+  return value.length >= 3 && value.length <= 10  
+}, "A minimum of 3 photos and a maximum of 10")
+
+requiredPaths.forEach(path => {
+  listingSchema.path(path.path).required(function(){
+    return this.isDraft === false 
+  }, path.errorMsg)
+})
 
 const Listing = mongoose.model("Listing", listingSchema)
 
