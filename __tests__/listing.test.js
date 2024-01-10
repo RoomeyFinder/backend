@@ -1,4 +1,3 @@
-const path = require('path');
 const { createListing, updateListing } = require("./utils/listing.utils")
 const app = require('../app')
 const { expect } = require('@jest/globals')
@@ -27,7 +26,6 @@ describe("Listing", () => {
   const mandatoryFields = [
     'photos',
     'idealRoommateDescription',
-    'address',
     'streetAddress',
     'city',
     'state',
@@ -60,7 +58,13 @@ describe("Listing", () => {
     expect(response.body.status).toBe("error")
     expect(
       mandatoryFields
-      .every(field => response.body.message.includes(field))).toBe(true)
+      .every(field => response.body.message.toLowerCase().includes(field.toLowerCase()))).toBe(true)
+  })
+  it("Should create draft if there are missing mandatory fields and isDraft is truthy", async () => {
+    const response = await createListing(server, token)(user._id, ["isDraft"], 0)
+    expect(response.status).toBe(201)
+    expect(response.body.status).toBe("success")
+    expect(response.body.listing?.isDraft).toBe(true)
   })
   it("Should create a listing", async () => {
     const response = await createListing(server, token)(user._id, null, 3)
@@ -109,7 +113,7 @@ describe("Listing", () => {
   it("Should get multiple listings", async () => {
     const response = await sendEmptyBodyRequest(server, "get", `/api/v1/listings`, token)
     expect(response.body.listings).toBeDefined()
-    expect(response.body.listings).toHaveLength(1)
+    expect(response.body.listings).toHaveLength(2)
     expect(response.status).toBe(200)
   })
   it("Should delete a listing", async () => {
