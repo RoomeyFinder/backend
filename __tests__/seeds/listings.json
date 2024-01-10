@@ -4,8 +4,8 @@
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
-    "longitude": 0,
-    "latitude": 0,
+    "longitude": 6.52,
+    "latitude": 3.37,
     "numberOfBedrooms": 3,
     "streetAddress": "street",
     "city": "city",
@@ -15,15 +15,16 @@
     "rentDuration": "biannually",
     "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
-    "features": []
+    "features": [],
+    "isDraft": true
   },
   {
     "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
-    "longitude": 0,
-    "latitude": 0,
+    "longitude": 6.52,
+    "latitude": 3.37,
     "numberOfBedrooms": 3,
     "streetAddress": "street",
     "city": "city",
@@ -33,15 +34,16 @@
     "rentDuration": "biannually",
     "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
-    "features": []
+    "features": [],
+    "isDraft": true
   },
   {
     "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
-    "longitude": 0,
-    "latitude": 0,
+    "longitude": 6.52,
+    "latitude": 3.37,
     "numberOfBedrooms": 3,
     "streetAddress": "street",
     "city": "city",
@@ -51,15 +53,16 @@
     "rentDuration": "biannually",
     "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
-    "features": []
+    "features": [],
+    "isDraft": true
   },
   {
     "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
-    "longitude": 0,
-    "latitude": 0,
+    "longitude": 6.52,
+    "latitude": 3.37,
     "numberOfBedrooms": 3,
     "streetAddress": "street",
     "city": "city",
@@ -69,15 +72,16 @@
     "rentDuration": "biannually",
     "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
-    "features": []
+    "features": [],
+    "isDraft": true
   },
   {
     "idealRoommateDescription": "Lo nostrum aliquid impedit ratione ab vitae natus nam? Dicta, laborum.",
     "photos": [],
     "owner": "",
     "isStudioApartment": false,
-    "longitude": 0,
-    "latitude": 0,
+    "longitude": 6.52,
+    "latitude": 3.37,
     "numberOfBedrooms": 3,
     "streetAddress": "street",
     "city": "city",
@@ -87,6 +91,7 @@
     "rentDuration": "biannually",
     "currentOccupancyCount": 1,
     "description": "lorem ipsum dolor but for yoruba?",
-    "features": []
+    "features": [],
+    "isDraft": true
   }
 ]
