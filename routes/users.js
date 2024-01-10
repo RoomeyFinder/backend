@@ -1,10 +1,10 @@
-var express = require('express');
+const express = require('express');
 const { protectRoute } = require("../middlewares/auth");
 const { getMultipleUsers, signup, verifyEmail, login, updateUser, getUser, deleteAccount } = require("../route-handlers/user");
 const { sendResponse, attachImagesPathToReq } = require("../utils/routes");
 const { multerUpload } = require("../middlewares/multer");
 const getImageUrl = require("../middlewares/cloudinary");
-var router = express.Router();
+const router = express.Router();
 
 router.post("/", signup, sendResponse)
 router.get("/verify-email/:id/:emailVerificationToken", verifyEmail, sendResponse)

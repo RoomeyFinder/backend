@@ -1,8 +1,8 @@
-var express = require('express');
+const express = require('express');
 const { protectRoute } = require("../middlewares/auth");
 const { sendResponse } = require("../utils/routes");
 const { getMultipleBookmarks, createBookmark, getBookmark, deleteBookmark } = require("../route-handlers/bookmark");
-var router = express.Router();
+const router = express.Router();
 
 router.get("/",  protectRoute, getMultipleBookmarks, sendResponse)
 router.post("/", protectRoute, createBookmark, sendResponse)
