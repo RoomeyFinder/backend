@@ -8,6 +8,7 @@ const indexRouter = require("./routes/index")
 const usersRouter = require("./routes/users")
 const listingsRouter = require("./routes/listings")
 const bookmarksRouter = require("./routes/bookmarks")
+const interestsRouter = require("./routes/interests")
 
 const dotenv = require("dotenv")
 dotenv.config({
@@ -65,6 +66,7 @@ app.use("/api/v1", indexRouter)
 app.use("/api/v1/users", usersRouter)
 app.use("/api/v1/listings", listingsRouter)
 app.use("/api/v1/bookmarks", bookmarksRouter)
+app.use("/api/v1/interests", interestsRouter)
 
 app.all("*", (req, _, next) => {
   next(
