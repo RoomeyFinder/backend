@@ -19,13 +19,13 @@ module.exports.create = async function (data = {}, save = false) {
     currentOccupancyCount,
     description,
     features,
+    isDraft
   } = data
 
   const expireAt = new Date(Date.now())
   expireAt.setFullYear(expireAt.getFullYear() + 1)
-
   let newListing = new Listing({
-    location: formatLocation(longitude, latitude),
+    ...(longitude && latitude ? {location:  formatLocation(longitude, latitude)} : {}),
     idealRoommateDescription,
     photos,
     owner,
@@ -39,7 +39,9 @@ module.exports.create = async function (data = {}, save = false) {
     rentDuration,
     currentOccupancyCount,
     description,
-    features
+    features,
+    isDraft,
+    isActive: isDraft ? false : true
   })
   if (save) return await newListing.save()
   return newListing
