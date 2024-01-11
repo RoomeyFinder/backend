@@ -43,17 +43,19 @@ module.exports.getMultipleInterests = routeTryCatcher(async function (req, res, 
 })
 
 module.exports.updateInterest = routeTryCatcher(async function(req, res, next) {
-  const interest = await findOneInterest({ _id: req.params.id, doc: req.user._id })
+  let interest = await findOneInterest({ _id: req.params.id, doc: req.user._id })
   if(!interest) return next(new CustomError("Not allowed!", 403))
-  if(interest.seen === false){
-    interest.seen = true
-    await interest.save()
-  }
-  return {
+  if(req.body.accepted === true) interest.accepted = req.body.accepted    
+  if(interest.seen === false) interest.seen = true
+  interest = await interest.save()
+  //send notification
+  //create conversation
+  req.response = {
     interest,
     statusCode: 200,
     status: "success",
   }
+  next()
 })
 
 module.exports.deleteInterest = routeTryCatcher(async function (req, res, next) {
