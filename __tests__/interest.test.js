@@ -85,12 +85,24 @@ describe("Interests", () => {
     expect(interestsResponse.body.interests.length).toEqual(1)
     expect(interestsResponse.body.interests[0].doc).toEqual(loginResponse.body.user._id)
   })
-  it("Should only permit interest owner to delete interest", async () => {
+  it("Should only permit interest.doc to update interest", async () => {
     const loginResponse = await (login(server)({
-      emailOrUserName: users[1].email,
+      emailOrUserName: users[0].email,
       password: "dev1234"
     }))
-    const unauthorizedUserToken = loginResponse.body.token    
+    const authorizedUserToken = loginResponse.body.token  
+    const unauthorizedResponse = await sendRequestWithBody(server, "put", `/api/v1/interests/${userInterest._id}`, { accepted: true }, token)
+    expect(unauthorizedResponse.status).toEqual(403)
+    const response = await sendRequestWithBody(server, "put", `/api/v1/interests/${userInterest._id}`, { accepted: true }, authorizedUserToken)
+    expect(response.body.interest.doc).toEqual(loginResponse.body.user._id)
+    expect(response.status).toBe(200)
+  })
+  it("Should only permit interest owners to delete interest", async () => {  
+    const loginResponse = await (login(server)({
+      emailOrUserName: users[0].email,
+      password: "dev1234"
+    }))
+    const unauthorizedUserToken = loginResponse.body.token  
     const unauthorizedDeleteResponse = await sendEmptyBodyRequest(server, "delete", `/api/v1/interests/${listingInterest._id}`, unauthorizedUserToken)
     expect(unauthorizedDeleteResponse.body.interest).toBeNull()
     expect(unauthorizedDeleteResponse.body.statusCode).toBe(403)
