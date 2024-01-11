@@ -20,6 +20,10 @@ const interestSchema = new mongoose.Schema(
     seen: {
       type: Boolean,
       default: false
+    },
+    accepted: {
+      type: Boolean,
+      default: false
     }
   },
   {
