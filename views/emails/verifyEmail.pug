@@ -6,31 +6,75 @@ block styles
     include ../animations.css
 block content
   div(style={padding: '20px 15px', 'font-family': ff, color: grey,})
-    img(src='https://www.svgrepo.com/show/243547/confetti.svg'
-      width='50' height='50' alt="confetti" 
-      style={position: 'absolute', margin: '0 auto', width: '100%', height: '100%', 'transform-origin': 'center', position: 'relative', 'display': 'block', width: '250px', height: '250px', animation: 'confetti 5s linear infinite alternate'})
+    img(src='http://localhost:3000/images/rf-pic.png' width='200' height='200' style="display:block;margin:0 auto;width:100%;height:auto;" alt="roomeyfinder")
     h1(style={'font-weight': '400', 'font-size': '36px', 'text-transform': 'capitalize'}) Hi there,
+    table.es-wrapper(width='100%', cellspacing='0', cellpadding='0')
+      tbody
+        tr
+          td.esd-email-paddings(valign='top')
+            table.es-content(cellspacing='0', cellpadding='0', align='center')
+              tbody
+                tr
+                  td.esd-stripe(align='center')
+                    table.es-content-body(width='600', cellspacing='0', cellpadding='0', align='center')
+                      tbody
+                        tr
+                          td.es-p20t.es-p20r.es-p20l.esd-structure(align='left')
+                            table(width='100%', cellspacing='0', cellpadding='0')
+                              tbody
+                                tr
+                                  td.esd-container-frame(width='560', align='left')
+                                    table(width='100%', cellspacing='0', cellpadding='0')
+                                      tbody
+                                        tr
+                                          td.esd-block-text(align='left')
+                                            h1(align='left', style='color:#000') Verify Your Email Address
+            table.esd-footer-popover.es-footer(cellspacing='0', cellpadding='0', align='center')
+              tbody
+                tr
+                  td.esd-stripe(align='center')
+                    table.es-footer-body(width='600', cellspacing='0', cellpadding='0', align='center')
+                      tbody
+                        tr
+                          td.esd-structure.es-p20t.es-p20l.es-p20r(align='left')
+                            table.es-right(cellspacing='0', cellpadding='0', align='right')
+                              tbody
+                                tr
+                                  td.esd-container-frame(width='560', align='left')
+                                    table(cellpadding='0', cellspacing='0', width='100%', role='presentation')
+                                      tbody
+                                        tr
+                                          td.esd-block-text(align='left')
+                                            p Hello @user.firstname,
+                                            p Please verify your email by entering the following code
+            table.esd-footer-popover.es-footer(cellspacing='0', cellpadding='0', align='center')
+              tbody
+                tr
+                  td.esd-stripe(align='center')
+                    table.es-footer-body(width='600', cellspacing='0', cellpadding='0', align='center')
+                      tbody
+                        tr
+                          td.esd-structure.es-p20b.es-p20r.es-p20l(align='left')
+                            table.es-right(cellspacing='0', cellpadding='0', align='right')
+                              tbody
+                                tr
+                                  td.esd-container-frame(width='560', align='left')
+                                    table(width='100%', cellspacing='0', cellpadding='0')
+                                      tbody
+                                        tr
+                                          td.esd-block-text.es-text-5358(align='left')
+                                            p(style='color:#3a86ff;font-size:26px;line-height:150%') 12345
+                                tr
+                                  td.esd-container-frame(width='560', align='left')
+                                    table(width='100%', cellspacing='0', cellpadding='0')
+                                      tbody
+                                        tr
+                                          td.esd-block-text(align='left')
+                                            p Kind regards
 
-    p Welcome to 
-      a(href=clientUrl + '/about') MedAI
-      |
-      | and we'd like to personally thank you for signing up to our service.
-    p You are now one step closer getting to the peak of good health!
-    |
-    p We established 
-      a(href=clientUrl + '/about') MedAI 
-      |
-      | to help you attain the healthy life you so desire
-    |
-    p Please follow this 
-      a(href=emailVerificationLink ) link
-      |to verify your email. We are here to serve you.
-
-    p Best,
-    p Everyone At MedAI.
 block foot
   p(style={opacity: '.7', color: grey, 'border': '1px solid', 'border-color': 'transparent', 
     'border-bottomm-color': grey, padding: '20px 15px', 'text-align': 'center'}) 
-    | &copy; 2023 MedAI
+    | &copy; 2024 RoomeyFinder
 
 
