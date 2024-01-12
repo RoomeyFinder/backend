@@ -43,6 +43,7 @@ module.exports.login = routeTryCatcher(async function(req, res, next){
     return next(new CustomError(`Please verify your email. A link has been sent to your email address ${user.email}`, 400))
   }
   const token = createJWT({ _id: user._id })
+  await user.updateLastSeen()
   delete user.password
   req.response = {
     statusCode: 200,
@@ -55,6 +56,7 @@ module.exports.login = routeTryCatcher(async function(req, res, next){
 
 module.exports.getUser = routeTryCatcher(async function (req, res, next) {
   const user = await findOne({ _id: req.params.id })
+  await user.updateLastSeen()
   delete user.password
   req.response = {
     statusCode: 200,
@@ -81,6 +83,7 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
   if (allergiesError || petsError)
     return next(new CustomError(`${allergiesError || ""}\n ${petsError || ""}`, 400))
   const user = await updateOne({ _id: req.user._id }, req.body)
+  await user.updateLastSeen()
   req.response = {
     user: user,
     statusCode: 200,

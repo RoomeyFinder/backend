@@ -158,6 +158,10 @@ const userSchema = new mongoose.Schema(
       enum: ["light", "dark"],
       default: "dark",
     },
+    lastSeen: {
+      type: Date,
+      default: new Date(Date.now())
+    }
   },
   {
     toObject: {
@@ -181,6 +185,11 @@ userSchema.pre("save", function (next) {
   }
   next()
 })
+
+userSchema.methods.updateLastSeen = async function(){
+  this.lastSeen = new Date(Date.now())
+  await this.save()
+}
 
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
