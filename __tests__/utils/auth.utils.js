@@ -16,9 +16,10 @@ const login = (server) => async (loginDetails) => {
     .set("Accept", "application/json")
     .expect("Content-Type", /json/)
 }
-const verifyEmail = (server) => async (userId, emailVerificationToken) => {
+const verifyEmail = (server) => async (email, emailVerificationCode) => {
   return await request(server)
-    .get(`/api/v1/users/verify-email/${userId}/${emailVerificationToken}`)
+    .post(`/api/v1/users/verify-email/${emailVerificationCode}`)
+    .send({ email })
     .set("Accept", "application/json")
     .expect("Content-Type", /json/)
 }
@@ -29,7 +30,7 @@ module.exports.verifyEmail = verifyEmail
 
 module.exports.createAuthorizedUser = async (server) => {
   const user = (await (signupUser(server))(signupData)).body.user;
-  await verifyEmail(server)(await user._id, await user.emailVerificationToken)
+  await verifyEmail(server)(await user.email, await user.emailVerificationCode)
   const loginResponse = await login(server)({
     emailOrUserName: signupData.email,
     password: signupData.password,

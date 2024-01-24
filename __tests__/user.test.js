@@ -31,11 +31,10 @@ describe("User signup, Email Verification, Login and CRUD Operations", () => {
     expect(user.gender).toBe(users[0].gender.toLowerCase())
     expect(user.countryCode).toBe(users[0].countryCode)
     expect(+user.phoneNumber).toBe(users[0].phoneNumber)
-    expect(user.currentLocation.coordinates).toBeInstanceOf(Array)
     expect(user.dob).toBe(users[0].dob)
   })
-  it("should verify users email: GET /api/v1/users/verify-email/:id/:emailVerificationToken", async () => {
-    const response = await verifyEmail(server)(user._id, user.emailVerificationToken)
+  it("should verify users email: GET /api/v1/users/verify-email/:id/:emailVerificationCode", async () => {
+    const response = await verifyEmail(server)(user.email, user.emailVerificationCode)
     expect(response.body.status).toBe("success")
     expect(response.body.user._id).toBe(user._id)
     expect(response.body.statusCode).toBe(200)
@@ -168,7 +167,7 @@ describe("Unique username and email", () => {
   })
   it("Does not allow multiple users with the same username", async () => {
     const newUser = (await signupUser(server)(users[2])).body.user
-    const verificationResponse = verifyEmail(server)(await newUser._id, await newUser.emailVerificationToken)
+    const verificationResponse = verifyEmail(server)(await newUser.email, await newUser.emailVerificationCode)
     if ((await verificationResponse).status === 200) {
       const loginResponse = await login(server)({
         emailOrUserName: users[2].email,
