@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     isPhoneNumberVerified: Boolean,
-    emailVerificationToken: String,
+    emailVerificationCode: String,
+    emailVerificationCodeExpiry: Date,
     passwordResetToken: String,
     firstName: {
       type: String,
@@ -70,7 +71,7 @@ const userSchema = new mongoose.Schema(
       validate: {
         validator: function (value) {
           const dob = new Date(value)
-          return new Date(Date.now()).getFullYear() - dob.getFullYear() >= 15
+          return new Date(Date.now()).getFullYear() - dob.getFullYear() >= 14
         },
         message: "You must be above 14 years of age!"
       }
@@ -103,12 +104,10 @@ const userSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ["Point"],
-        required: [true, "Invalid location"],
       },
       coordinates: {
         type: [Number],
         index: "2dsphere",
-        required: [true, "Invalid location"],
       },
     },
     currentAddress: String,
@@ -161,7 +160,8 @@ const userSchema = new mongoose.Schema(
     lastSeen: {
       type: Date,
       default: new Date(Date.now())
-    }
+    },
+    zipcode: String
   },
   {
     toObject: {
@@ -174,10 +174,7 @@ const userSchema = new mongoose.Schema(
     validateBeforeSave: true
   }
 )
-
-userSchema.virtual("unseenInterestsRecieved").get(async function () {
-  return await Interest.countDocuments({ doc: this._id, type: "User", seen: false, })
-})
+userSchema.virtual("unseenInterestsReceived")
 
 userSchema.pre("save", function (next) {
   if (!this.userName || this.userName.length === 0) {
@@ -191,6 +188,10 @@ userSchema.methods.updateLastSeen = async function(){
   await this.save()
 }
 
+userSchema.post(/^find/, async function(doc, next){
+  if(doc) doc.unseenInterestsReceived = await Interest.countDocuments({ doc: this._id, type: "User", seen: false, })
+  next()
+})
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     if (

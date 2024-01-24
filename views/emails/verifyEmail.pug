@@ -28,7 +28,7 @@ block content
                                       tbody
                                         tr
                                           td.esd-block-text(align='left')
-                                            h1(align='left', style='color:#000') Verify Your Email Address
+                                            h1(align='left', style='color:#000') Your Email Verification Code
             table.esd-footer-popover.es-footer(cellspacing='0', cellpadding='0', align='center')
               tbody
                 tr
@@ -45,8 +45,8 @@ block content
                                       tbody
                                         tr
                                           td.esd-block-text(align='left')
-                                            p Hello @user.firstname,
-                                            p Please verify your email by entering the following code
+                                            p Hello #{user.firstName},
+                                            p Here's your email verification code
             table.esd-footer-popover.es-footer(cellspacing='0', cellpadding='0', align='center')
               tbody
                 tr
@@ -63,7 +63,7 @@ block content
                                       tbody
                                         tr
                                           td.esd-block-text.es-text-5358(align='left')
-                                            p(style='color:#3a86ff;font-size:26px;line-height:150%') 12345
+                                            p(style='color:#3a86ff;font-size:26px;line-height:150%') #{emailVerificationCode}
                                 tr
                                   td.esd-container-frame(width='560', align='left')
                                     table(width='100%', cellspacing='0', cellpadding='0')

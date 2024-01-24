@@ -7,6 +7,7 @@ module.exports.signup = routeTryCatcher(async function(req, res, next){
   const existingUser = await findOne({ email: req.body.email })
   if(existingUser) return next(new CustomError("Email already in use! Try logging in!", 400))
   let user = await create(req.body, false)
+  await user.save()
   user = await sendVerificationEmail(user)
   await user.save()
   req.response = {
@@ -17,10 +18,27 @@ module.exports.signup = routeTryCatcher(async function(req, res, next){
   return next()
 })
 
-module.exports.verifyEmail = routeTryCatcher(async function (req, res, next) {
-  let user = await findOne({ _id: req.params.id, emailVerificationToken: req.params.emailVerificationToken })
+module.exports.resendEmailVerificationCode = routeTryCatcher(async function (req, res, next) {
+  let user = await findOne({ email: req.body.email })
   if (!user) return next(new CustomError("Not allowed!", 403))
-  user.emailVerificationToken = undefined
+  user = await sendVerificationEmail(user)
+  user = await user.save()
+  Object.keys(user).forEach(key => {
+    if(key !== "_id") user[key] = undefined
+  })
+  req.response = {
+    user,
+    status: "success",
+    statusCode: 200,
+    message: "A new verification code has been sent to your email"
+  }
+  return next()
+})
+
+module.exports.verifyEmail = routeTryCatcher(async function (req, res, next) {
+  let user = await findOne({ email: req.body.email, emailVerificationCode: req.params.emailVerificationCode })
+  if (!user) return next(new CustomError("Invalid code!", 403))
+  if (new Date(Date.now()) > new Date(user.emailVerificationCodeExpiry)) return next(new CustomError("Invalid code!", 403))
   user.isEmailVerified = true
   await user.save()
   req.response = {
@@ -40,7 +58,7 @@ module.exports.login = routeTryCatcher(async function(req, res, next){
   if(!user.isEmailVerified){
     await sendVerificationEmail(user)
     await user.save()
-    return next(new CustomError(`Please verify your email. A link has been sent to your email address ${user.email}`, 400))
+    return next(new CustomError(`Please verify your email. A link has been sent to your email address ${user.email}`, 302))
   }
   const token = createJWT({ _id: user._id })
   await user.updateLastSeen()
@@ -86,6 +104,28 @@ module.exports.updateUser = routeTryCatcher(async function(req, res, next){
   await user.updateLastSeen()
   req.response = {
     user: user,
+    statusCode: 200,
+    status: "success"
+  }
+  return next()
+})
+
+module.exports.completeSignup = routeTryCatcher(async function(req, res, next){
+  let user = await findOne({ email: req.body.email })
+  if(!user) return next(new CustomError("Not allowed!", 403))
+  if(req.params.emailVerificationCode !== user.emailVerificationCode) return next(new CustomError("Not allowed!", 403))
+  const {
+    address, city, state, country, longitude, latitude, zipcode
+  } = req.body
+  user = await updateOne({ _id: user._id }, { longitude, latitude, address, state, city, country, zipcode })
+  user.emailVerificationCode = undefined
+  await user.updateLastSeen()
+  await user.save()
+  const token = createJWT({ _id: user._id })
+  delete user.password
+  req.response = {
+    user: user,
+    token,
     statusCode: 200,
     status: "success"
   }

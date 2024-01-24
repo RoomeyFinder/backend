@@ -23,3 +23,7 @@ module.exports.concatToArrayUntilMax = function(max, oldArray, arrayToConcat){
   }
   return concatenated
 }
+
+module.exports.generateRandomSixDigitToken = function(){
+  return Math.floor(100000 + Math.random() * 900000)
+}

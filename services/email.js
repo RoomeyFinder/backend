@@ -9,7 +9,7 @@ dotenv.config({
   path: "./.env",
 })
 
-const isDev = process.env.NODE_ENV === "dev"
+const isDev = process.env.NODE_ENV === "DEV"
 const isTest = process.env.NODE_ENV === "test"
 const OAuth2 = google.auth.OAuth2
 const oauth2Client = new OAuth2(
