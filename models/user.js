@@ -4,18 +4,21 @@ const { generateFromEmail } = require("unique-username-generator");
 const bcrypt = require("bcryptjs");
 const Interest = require("./interest")
 
+const Image = new mongoose.Schema({
+    asset_id: String,
+    public_id: String,
+    width: Number,
+    height: Number,
+    secure_url: String,
+    etag: String,
+    created_at: Date
+})
+
 const userSchema = new mongoose.Schema(
-  {
+  { 
+    profileImage: Image,
     photos: {
-      type: [{
-        asset_id: String,
-        public_id: String,
-        width: Number,
-        height: Number,
-        secure_url: String,
-        etag: String,
-        created_at: Date
-      }],
+      type: [Image],
       validate: [(value) => value.length <= 10, "A minimum of 3 photos and a maximum of 10"],
     },
     countOfInterestsLeft: {
@@ -84,6 +87,7 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: [true, "Phone number is required"],
+      validate: [(value) => isNaN(Number(value)) === false, "Invalid phone number"]
     },
     countryCode: {
       type: Number,
@@ -111,8 +115,6 @@ const userSchema = new mongoose.Schema(
       },
     },
     currentAddress: String,
-    currentCity: String,
-    currentState: String,
     hasPets: Boolean,
     pets: {
       type: [String],
@@ -124,15 +126,18 @@ const userSchema = new mongoose.Schema(
       default: []
     },
     budget: Number,
-    jobTitle: String,
+    occupation: {
+      type: String,
+      default: ""
+    },
     organization: String,
     isStudent: Boolean,
     school: String,
     major: String,
-    tags: {
-      type: [String],
-      enum: [],
-      validate: [(value) => value.length <= 20, "A maximum of 20 tags"],
+    lifestyleTags: {
+      type: [{ value: String, category: String }],
+      validate: [(value) => value.length <= 10, "A maximum of 10 lifestyle tags"],
+      default: []
     },
     earliestMoveDate: Date,
     targetLocation: {
@@ -232,7 +237,7 @@ userSchema.pre("save", function (next) {
     ((this.hasPets && this.pets.length > 0) || !this.hasPets) &&
     ((this.hasAllergies && this.allergies.length > 0) || !this.hasAllergies) &&
     this.budget &&
-    ((!this.isStudent && this.jobTitle && this.organization) ||
+    ((!this.isStudent && this.occupation && this.organization) ||
       (this.isStudent && this.school && this.major)) &&
     this.earliestMoveDate &&
     this.lookingFor &&

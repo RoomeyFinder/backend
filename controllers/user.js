@@ -34,14 +34,14 @@ module.exports.sendVerificationEmail = async function(user) {
 module.exports.create = async function (data = {}, save = false) {
   const { 
     firstName, lastName, email, password, 
-    dob, gender, countryCode, phoneNumber
+    dob, gender, countryCode, phoneNumber, occupation, isStudent, school
    } = data
   const expireAt = new Date(Date.now())
   expireAt.setMonth(expireAt.getMonth() + 1)
   let newUser = new User({
     firstName, lastName, email, password, 
     dob, gender, phoneNumber, countryCode,
-    expireAt,
+    expireAt, occupation, isStudent, school
   })
   if(save) return await newUser.save()
   return newUser
@@ -82,8 +82,6 @@ module.exports.updateOne = async function (filter = {}, update = {}) {
     "targetCity", 
     "targetState",
     "currentAddress", 
-    "currentCity", 
-    "currentState",
     "stateOfOrigin",
     "countryOfOrigin",
     "countryCode",

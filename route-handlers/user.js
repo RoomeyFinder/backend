@@ -115,9 +115,9 @@ module.exports.completeSignup = routeTryCatcher(async function(req, res, next){
   if(!user) return next(new CustomError("Not allowed!", 403))
   if(req.params.emailVerificationCode !== user.emailVerificationCode) return next(new CustomError("Not allowed!", 403))
   const {
-    address, city, state, country, longitude, latitude, zipcode
+    currentAddress, currentLongitude, currentLatitude, zipcode
   } = req.body
-  user = await updateOne({ _id: user._id }, { longitude, latitude, address, state, city, country, zipcode })
+  user = await updateOne({ _id: user._id }, { currentLongitude, currentLatitude, currentAddress, zipcode })
   user.emailVerificationCode = undefined
   await user.updateLastSeen()
   await user.save()
