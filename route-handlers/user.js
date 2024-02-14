@@ -1,4 +1,4 @@
-const { create, sendVerificationEmail, findOne, findMany, updateOne, deleteOne } = require("../controllers/user")
+const { create, findOne, findMany, updateOne, deleteOne } = require("../controllers/user")
 const CustomError = require("../utils/error")
 const { routeTryCatcher } = require("../utils/routes")
 const { compareValueToHash, createJWT } = require("../utils/security")
@@ -8,7 +8,8 @@ module.exports.signup = routeTryCatcher(async function(req, res, next){
   if(existingUser) return next(new CustomError("Email already in use! Try logging in!", 400))
   let user = await create(req.body, false)
   await user.save()
-  user = await sendVerificationEmail(user)
+  user = await user.generateEmailVerificationCode(user)
+  await user.sendVerificationEmail()
   await user.save()
   req.response = {
     user,
@@ -21,7 +22,8 @@ module.exports.signup = routeTryCatcher(async function(req, res, next){
 module.exports.resendEmailVerificationCode = routeTryCatcher(async function (req, res, next) {
   let user = await findOne({ email: req.body.email })
   if (!user) return next(new CustomError("Not allowed!", 403))
-  user = await sendVerificationEmail(user)
+  user = await user.generateEmailVerificationCode(user)
+  await user.sendVerificationEmail()
   user = await user.save()
   Object.keys(user).forEach(key => {
     if(key !== "_id") user[key] = undefined
@@ -51,12 +53,13 @@ module.exports.verifyEmail = routeTryCatcher(async function (req, res, next) {
 
 module.exports.login = routeTryCatcher(async function(req, res, next){
   const { emailOrUserName, password } = req.body
-  const user = await findOne({ $or: [{ email: emailOrUserName }, { userName: emailOrUserName }]})
+  let user = await findOne({ $or: [{ email: emailOrUserName }, { userName: emailOrUserName }]})
   if(!user) return next(new CustomError("Invalid credentials!", 400))
   const isMatchingPassword = await compareValueToHash(password, user.password)
   if (isMatchingPassword === false) return next(new CustomError("Invalid credentials", 400))
   if(!user.isEmailVerified){
-    await sendVerificationEmail(user)
+    user = await user.generateEmailVerificationCode()
+    await user.sendVerificationEmail(user)
     await user.save()
     return next(new CustomError(`Please verify your email. A link has been sent to your email address ${user.email}`, 302))
   }
@@ -140,6 +143,34 @@ module.exports.getMultipleUsers = routeTryCatcher(async function (req, res, next
     status: "success"
   }
   return next()
+})
+
+module.exports.validatePassword = routeTryCatcher(async function (req, res, next) {
+  const user = await findOne({ _id: req.user._id })
+  if(!user) return next(new CustomError("Invalid request!", 400))
+  const isValidPassword = await compareValueToHash(req.body.oldPassword, user.password)
+  req.response = {
+    isValidPassword,
+    statusCode: 200,
+    status: "success"
+  }
+  return next()
+})
+
+module.exports.changePassword = routeTryCatcher(async function(req, res, next) {
+  if(!req.body.newPassword|| req.body.newPassword.length === 0) return next()
+  const { isValidPassword } = req.response
+  if(!isValidPassword) return next(new CustomError("Old password not matched", 400))
+  const user = await findOne({ _id: req.user._id })
+  if(!user) return next(new CustomError("Invalid request!", 400))
+  user.password = req.body.newPassword
+  await user.save()
+  req.response = {
+    statusCode: 200,
+    status: "success",
+    message: "Password changed successfully"
+  }
+  next()
 })
 module.exports.deleteAccount = routeTryCatcher(async function (req, res, next) {
   if(req.user._id.toString() !== req.params.id) return next("Not allowed!", 403)

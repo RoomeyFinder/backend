@@ -1,29 +1,35 @@
 const mongoose = require("mongoose")
 const CustomError = require("../utils/error")
-const { generateFromEmail } = require("unique-username-generator");
-const bcrypt = require("bcryptjs");
+const { generateFromEmail } = require("unique-username-generator")
+const bcrypt = require("bcryptjs")
 const Interest = require("./interest")
+const { EmailSender } = require("../services/email")
+const { generateRandomSixDigitToken } = require("../utils")
 
 const Image = new mongoose.Schema({
-    asset_id: String,
-    public_id: String,
-    width: Number,
-    height: Number,
-    secure_url: String,
-    etag: String,
-    created_at: Date
+  asset_id: String,
+  public_id: String,
+  width: Number,
+  height: Number,
+  secure_url: String,
+  etag: String,
+  created_at: Date,
 })
 
 const userSchema = new mongoose.Schema(
-  { 
+  {
     profileImage: Image,
     photos: {
       type: [Image],
-      validate: [(value) => value.length <= 10, "A minimum of 3 photos and a maximum of 10"],
+      validate: [
+        (value) => value.length <= 10,
+        "A minimum of 3 photos and a maximum of 10",
+      ],
     },
     countOfInterestsLeft: {
       type: Number,
-      default: 20
+      default: 20,
+      max
     },
     isIdVerified: {
       type: Boolean,
@@ -76,8 +82,8 @@ const userSchema = new mongoose.Schema(
           const dob = new Date(value)
           return new Date(Date.now()).getFullYear() - dob.getFullYear() >= 14
         },
-        message: "You must be above 14 years of age!"
-      }
+        message: "You must be above 14 years of age!",
+      },
     },
     about: {
       type: String,
@@ -87,17 +93,20 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: [true, "Phone number is required"],
-      validate: [(value) => isNaN(Number(value)) === false, "Invalid phone number"]
+      validate: [
+        (value) => isNaN(Number(value)) === false,
+        "Invalid phone number",
+      ],
     },
     countryCode: {
       type: Number,
-      required: [true, "Country code is required"]
+      required: [true, "Country code is required"],
     },
     stateOfOrigin: {
       type: String,
     },
     countryOfOrigin: {
-      type: String
+      type: String,
     },
     gender: {
       type: String,
@@ -118,17 +127,17 @@ const userSchema = new mongoose.Schema(
     hasPets: Boolean,
     pets: {
       type: [String],
-      default: []
+      default: [],
     },
     hasAllergies: Boolean,
     allergies: {
       type: [String],
-      default: []
+      default: [],
     },
     budget: Number,
     occupation: {
       type: String,
-      default: ""
+      default: "",
     },
     organization: String,
     isStudent: Boolean,
@@ -136,8 +145,11 @@ const userSchema = new mongoose.Schema(
     major: String,
     lifestyleTags: {
       type: [{ value: String, category: String }],
-      validate: [(value) => value.length <= 10, "A maximum of 10 lifestyle tags"],
-      default: []
+      validate: [
+        (value) => value.length <= 10,
+        "A maximum of 10 lifestyle tags",
+      ],
+      default: [],
     },
     earliestMoveDate: Date,
     targetLocation: {
@@ -164,9 +176,9 @@ const userSchema = new mongoose.Schema(
     },
     lastSeen: {
       type: Date,
-      default: new Date(Date.now())
+      default: new Date(Date.now()),
     },
-    zipcode: String
+    zipcode: String,
   },
   {
     toObject: {
@@ -176,7 +188,7 @@ const userSchema = new mongoose.Schema(
       virtuals: true,
     },
     timestamps: true,
-    validateBeforeSave: true
+    validateBeforeSave: true,
   }
 )
 userSchema.virtual("unseenInterestsReceived")
@@ -188,13 +200,18 @@ userSchema.pre("save", function (next) {
   next()
 })
 
-userSchema.methods.updateLastSeen = async function(){
+userSchema.methods.updateLastSeen = async function () {
   this.lastSeen = new Date(Date.now())
   await this.save()
 }
 
-userSchema.post(/^find/, async function(doc, next){
-  if(doc) doc.unseenInterestsReceived = await Interest.countDocuments({ doc: this._id, type: "User", seen: false, })
+userSchema.post(/^find/, async function (doc, next) {
+  if (doc)
+    doc.unseenInterestsReceived = await Interest.countDocuments({
+      doc: this._id,
+      type: "User",
+      seen: false,
+    })
   next()
 })
 userSchema.pre("save", async function (next) {
@@ -205,12 +222,13 @@ userSchema.pre("save", async function (next) {
     )
       return next(
         new CustomError(
-          "Your password cannot contain your first name or last name", 400
+          "Your password cannot contain your first name or last name",
+          400
         )
       )
-    else{
+    else {
       const salt = await bcrypt.genSalt(10)
-      this.password = await bcrypt.hash(this.password, salt);
+      this.password = await bcrypt.hash(this.password, salt)
     }
   }
   next()
@@ -245,9 +263,46 @@ userSchema.pre("save", function (next) {
     this.countryCode &&
     this.isEmailVerified &&
     this.photos.length >= 1
-     ? true : false 
+      ? true
+      : false
   return next()
 })
+
+userSchema.methods.generateEmailVerificationCode = async function () {
+  const expiry = new Date(Date.now())
+  expiry.setHours(expiry.getHours() + 48)
+  this.emailVerificationCode = generateRandomSixDigitToken()
+  this.emailVerificationCodeExpiry = expiry
+  return await this.save()
+}
+
+userSchema.methods.sendVerificationEmail = async function () {
+  const options = {
+    from: process.env.APP_EMAIL_ADDRESS,
+    to: this.email,
+    subject: "Please verify your email",
+    html: EmailSender.generateEmailBody({
+      name: `${this.firstName}`,
+      intro: "Please verify your email",
+      action: {
+        instructions: "Use the six digit code to verify your email",
+        button: {
+          text: this.emailVerificationCode,
+        },
+      },
+      outro: "Welcome to RoomeyFinder",
+    }),
+  }
+  let isSuccess = false
+  try {
+    isSuccess = EmailSender.sendEmail(options)
+  } catch (err) {
+    process.env.NODE_ENV !== "test" && console.log(err)
+    console.log("failed to send email")
+    isSuccess = false
+  }
+  return isSuccess
+}
 
 const User = mongoose.model("User", userSchema)
 

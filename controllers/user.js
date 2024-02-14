@@ -1,35 +1,6 @@
 const User = require("../models/user")
 const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
-const EmailSender = require("../services/email")
-const { formatLocation, concatToArrayUntilMax, generateRandomSixDigitToken } = require("../utils")
-
-module.exports.sendVerificationEmail = async function(user) {
-  if (!user) return null
-  else {
-    const expiry = new Date(Date.now())
-    expiry.setHours(expiry.getHours() + 48)
-    user.emailVerificationCode = generateRandomSixDigitToken()
-    user.emailVerificationCodeExpiry = expiry
-    const msg = {
-      from: process.env.APP_EMAIL_ADDRESS,
-      to: user.email,
-      subject: "Please verify your email",
-    }
-    const options = {
-      emailVerificationCode: `${user.emailVerificationCode}`,
-      user,
-      clientUrl: process.env.CLIENT_URL,
-    }
-    try {
-      await new EmailSender({
-        msg, template: "verifyEmail", options
-      }).sendEmail()
-    } catch (err) {
-      process.env.NODE_ENV !== "test" && console.log(err)
-    }
-    return user
-  }
-}
+const { formatLocation, concatToArrayUntilMax } = require("../utils")
 
 module.exports.create = async function (data = {}, save = false) {
   const { 
