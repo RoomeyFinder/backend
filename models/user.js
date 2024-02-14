@@ -29,7 +29,6 @@ const userSchema = new mongoose.Schema(
     countOfInterestsLeft: {
       type: Number,
       default: 20,
-      max
     },
     isIdVerified: {
       type: Boolean,

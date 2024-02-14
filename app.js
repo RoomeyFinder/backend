@@ -6,6 +6,7 @@ const globalErrorHandler = require("./middlewares/error")
 const CustomError = require("./utils/error")
 const indexRouter = require("./routes/index")
 const usersRouter = require("./routes/users")
+const feedbacksRouter = require("./routes/feedbacks")
 const listingsRouter = require("./routes/listings")
 const bookmarksRouter = require("./routes/bookmarks")
 const interestsRouter = require("./routes/interests")
@@ -67,6 +68,7 @@ app.use("/api/v1/users", usersRouter)
 app.use("/api/v1/listings", listingsRouter)
 app.use("/api/v1/bookmarks", bookmarksRouter)
 app.use("/api/v1/interests", interestsRouter)
+app.use("/api/v1/feedbacks", feedbacksRouter)
 
 app.all("*", (req, _, next) => {
   next(
