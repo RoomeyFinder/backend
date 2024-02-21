@@ -13,7 +13,7 @@ router.put("/verify-email/:emailVerificationCode", completeSignup, sendResponse)
 router.post("/login", login, sendResponse)
 router.post("/change-password", protectRoute, validatePassword, changePassword, sendResponse)
 router.get("/", protectRoute, getMultipleUsers, sendResponse)
-router.put("/:id", attachImagesPathToReq("photos"), protectRoute, multerUpload.any(), getImageUrl, protectRoute, updateUser, sendResponse)
+router.put("/:id", attachImagesPathToReq("newPhotos"), protectRoute, multerUpload.any(), getImageUrl, protectRoute, updateUser, sendResponse)
 router.get("/:id", protectRoute, getUser, sendResponse)
 router.delete("/:id", protectRoute, deleteAccount, sendResponse)
 

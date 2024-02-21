@@ -193,7 +193,7 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual("unseenInterestsReceived")
 
 userSchema.pre("save", function (next) {
-  if (!this.userName || this.userName.length === 0) {
+  if (!this.userName || this.userName?.length === 0) {
     this.userName = generateFromEmail(this.email, 3)
   }
   next()
@@ -235,8 +235,8 @@ userSchema.pre("save", async function (next) {
 
 userSchema.pre("save", function (next) {
   if (this.isStudent) {
-    const schoolError = this.school.length === 0 && "Please specify school"
-    const majorError = this.major.length === 0 && "Please specify major"
+    const schoolError = this.school?.length === 0 && "Please specify school"
+    const majorError = this.major?.length === 0 && "Please specify major"
     if (schoolError || majorError)
       return next(
         new CustomError(`${schoolError || ""}\n ${majorError || ""}`),
@@ -248,11 +248,11 @@ userSchema.pre("save", function (next) {
 
 userSchema.pre("save", function (next) {
   this.isProfileComplete =
-    this.about.length > 0 &&
-    this.stateOfOrigin.length > 0 &&
-    this.countryOfOrigin.length > 0 &&
-    ((this.hasPets && this.pets.length > 0) || !this.hasPets) &&
-    ((this.hasAllergies && this.allergies.length > 0) || !this.hasAllergies) &&
+    this.about?.length > 0 &&
+    this.stateOfOrigin?.length > 0 &&
+    this.countryOfOrigin?.length > 0 &&
+    ((this.hasPets && this.pets?.length > 0) || !this.hasPets) &&
+    ((this.hasAllergies && this.allergies?.length > 0) || !this.hasAllergies) &&
     this.budget &&
     ((!this.isStudent && this.occupation && this.organization) ||
       (this.isStudent && this.school && this.major)) &&
@@ -261,7 +261,7 @@ userSchema.pre("save", function (next) {
     this.phoneNumber &&
     this.countryCode &&
     this.isEmailVerified &&
-    this.photos.length >= 1
+    this.photos?.length >= 1
       ? true
       : false
   return next()

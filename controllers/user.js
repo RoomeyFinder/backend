@@ -63,19 +63,23 @@ module.exports.updateOne = async function (filter = {}, update = {}) {
     if (allowedPaths.includes(key) && update[key] !== undefined) 
       user[key] = update[key]
   })
+  console.log(update, user)
   const {  
-    currentLongitude, currentLatitude, tags, targetLongitude, targetLatitude, photos
+    currentLongitude, currentLatitude, lifestyleTags = [], targetLongitude, targetLatitude, newPhotos = [], photosToKeep = [],
   } = update
   if(currentLongitude && currentLatitude)
     user.currentLocation = formatLocation(currentLongitude, currentLatitude)
   if(targetLongitude && targetLatitude)
     user.targetLocation = formatLocation(targetLongitude, targetLatitude)
-  if(Array.isArray(photos))
-    user.photos = concatToArrayUntilMax(10, user.photos, photos)
-  if(Array.isArray(tags))
-    user.tags = concatToArrayUntilMax(20, user.tags, tags)
-
-  return await user.save()
+  if(Array.isArray(newPhotos)){
+    if(Array.isArray(photosToKeep)) user.photos = photosToKeep
+    user.photos = concatToArrayUntilMax(10, user.photos, newPhotos)
+  }
+  if(Array.isArray(lifestyleTags))
+    user.lifestyleTags = lifestyleTags
+  let saved= await user.save()
+  console.log(user.lifestyleTags)
+  return saved
 }
 
 module.exports.deleteOne = async function (filter = {}) {
