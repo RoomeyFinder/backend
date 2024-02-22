@@ -1,12 +1,8 @@
-const { v2: cloudinary } = require("cloudinary")
 const DatauriParser = require("datauri/parser")
-const CustomError = require("../utils/error")
+const cloudinary = require("../utils/cloudinary")
+
 const parser = new DatauriParser()
-cloudinary.config({
-  cloud_name: process.env.CLOUDNARY_NAME,
-  api_key: process.env.CLOUDNARY_API_KEY,
-  api_secret: process.env.CLOUDNARY_API_SECRET,
-})
+
 module.exports = async (req, res, next) => {
   if (!req.files || req.files.length === 0) return next()
   if (process.env.NODE_ENV === "test") {
@@ -25,7 +21,7 @@ module.exports = async (req, res, next) => {
     if (req.imagesPath) req.body[req.imagesPath] = done
     return next()
   }
-  const done = await Promise.allSettled(
+  req.files = await Promise.allSettled(
     req.files.map(async (file) => {
       if (file) {
         const fileExt = `.${file.mimetype.split("/")[1]}`
@@ -37,19 +33,26 @@ module.exports = async (req, res, next) => {
           })
         } catch (err) {
           process.env.NODE_ENV !== "test" && console.log(err.message)
-          next(new CustomError(err.message), 500)
+          return null
         }
-        if (!response) {
-          return next(new CustomError("Something went wrong!", 500))
-        }
-        req.body[file.fieldname] = response
-        console.log(file.fieldname)
+        if (!response) return null
+
+        // req.body[file.fieldname] = response
+        console.log(
+          file.fieldname
+          // req.body[file.fieldname],
+        )
+        response.fieldname = file.fieldname
         return response
       }
     })
   )
-  if (done.length !== req.files.length)
-    return next(new CustomError("Unable to upload some files!", 500))
-  req.body[req.imagesPath] = done.map((it) => it.value)
+  const reducedByFields = req.files.reduce((acc, curr) => {
+    const fieldName = curr.value.fieldname
+    if (acc[fieldName]) acc[fieldName].push(curr.value)
+    else acc[fieldName] = [curr.value]
+    return acc
+  }, {})
+  req.body = { ...req.body, ...reducedByFields }
   next()
 }

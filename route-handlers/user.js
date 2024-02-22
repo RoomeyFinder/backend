@@ -5,6 +5,7 @@ const {
   updateOne,
   deleteOne,
 } = require("../controllers/user")
+const cloudinary = require("../utils/cloudinary")
 const CustomError = require("../utils/error")
 const { routeTryCatcher } = require("../utils/routes")
 const { compareValueToHash, createJWT } = require("../utils/security")
@@ -99,7 +100,8 @@ module.exports.login = routeTryCatcher(async function (req, res, next) {
 })
 
 module.exports.getUser = routeTryCatcher(async function (req, res, next) {
-  const user = await findOne({ _id: req.params.id })
+  const userId = req.params.id || req.user._id
+  const user = await findOne({ _id: userId })
   await user.updateLastSeen()
   delete user.password
   req.response = {
@@ -120,13 +122,38 @@ module.exports.updateUser = routeTryCatcher(async function (req, res, next) {
     allergies,
     photosToDelete,
     photosToKeep,
-    newPhotos,
+    profileImage,
   } = req.body
-  console.log(req.body.lifestyleTags, "dfadfaa")
+  if (Array.isArray(profileImage)) req.body.profileImage = profileImage[0]
+  if (photosToKeep) {
+    if (Array.isArray(photosToKeep))
+      req.body.photosToKeep = photosToKeep.map((photo) => {
+        if (typeof photo === "string") return JSON.parse(photo)
+        return photo
+      })
+    if (typeof photosToKeep === "string")
+      req.body.photosToKeep = [JSON.parse(photosToKeep)]
+  }
+  if (photosToDelete) {
+    let done
+    if (Array.isArray(photosToDelete)) {
+      done = await Promise.all(
+        photosToDelete.map(async (photo) => {
+          console.log("photo", typeof photo)
+          if (typeof photo !== "string") return
+          return await cloudinary.uploader.destroy(JSON.parse(photo).public_id)
+        })
+      )
+    }
+    if (typeof photosToDelete === "string")
+      done = await cloudinary.uploader.destroy(
+        JSON.parse(photosToDelete).public_id
+      )
+  }
   if (Array.isArray(req.body.lifestyleTags))
     req.body.lifestyleTags = req.body.lifestyleTags
       .filter((it) => Boolean(it))
-      .map((t) => typeof t === "string" ? JSON.parse(t) : t)
+      .map((t) => (typeof t === "string" ? JSON.parse(t) : t))
   const petsError =
     ((hasPets === true && pets?.length === 0) ||
       (hasPets === false && pets?.length > 0)) &&
