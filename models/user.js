@@ -42,6 +42,8 @@ const userSchema = new mongoose.Schema(
     emailVerificationCode: String,
     emailVerificationCodeExpiry: Date,
     passwordResetToken: String,
+    passwordResetCodeExpiry: Date,
+    passwordResetCode: String,
     firstName: {
       type: String,
       required: [true, "First name is required"],
@@ -274,6 +276,13 @@ userSchema.methods.generateEmailVerificationCode = async function () {
   this.emailVerificationCodeExpiry = expiry
   return await this.save()
 }
+userSchema.methods.generatePasswordResetCode = async function () {
+  const expiry = new Date(Date.now())
+  expiry.setMinutes(expiry.getMinutes() + 15)
+  this.passwordResetCode = generateRandomSixDigitToken()
+  this.passwordResetCodeExpiry = expiry
+  return await this.save()
+}
 
 userSchema.methods.sendVerificationEmail = async function () {
   const options = {
@@ -290,6 +299,35 @@ userSchema.methods.sendVerificationEmail = async function () {
         },
       },
       outro: "Welcome to RoomeyFinder",
+    }),
+  }
+  let isSuccess = false
+  try {
+    isSuccess = EmailSender.sendEmail(options)
+  } catch (err) {
+    process.env.NODE_ENV !== "test" && console.log(err)
+    console.log("failed to send email")
+    isSuccess = false
+  }
+  return isSuccess
+}
+
+
+userSchema.methods.sendPasswordResetEmail = async function () {
+  const options = {
+    from: process.env.APP_EMAIL_ADDRESS,
+    to: this.email,
+    subject: "Please verify your email",
+    html: EmailSender.generateEmailBody({
+      name: `${this.firstName}`,
+      intro: "You requested a password reset",
+      action: {
+        instructions: "Use the six digit code to reset your password",
+        button: {
+          text: this.passwordResetCode,
+        },
+      },
+      outro: "",
     }),
   }
   let isSuccess = false

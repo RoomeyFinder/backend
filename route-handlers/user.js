@@ -139,7 +139,6 @@ module.exports.updateUser = routeTryCatcher(async function (req, res, next) {
     if (Array.isArray(photosToDelete)) {
       done = await Promise.all(
         photosToDelete.map(async (photo) => {
-          console.log("photo", typeof photo)
           if (typeof photo !== "string") return
           return await cloudinary.uploader.destroy(JSON.parse(photo).public_id)
         })
@@ -226,10 +225,14 @@ module.exports.validatePassword = routeTryCatcher(async function (
 ) {
   const user = await findOne({ _id: req.user._id })
   if (!user) return next(new CustomError("Invalid request!", 400))
+  if (req.body.newPassword || req.body.passwordResetCode) return next()
   const isValidPassword = await compareValueToHash(
     req.body.oldPassword,
     user.password
   )
+  await user.generatePasswordResetCode()
+  await user.sendPasswordResetEmail()
+  await user.save()
   req.response = {
     isValidPassword,
     statusCode: 200,
@@ -243,12 +246,18 @@ module.exports.changePassword = routeTryCatcher(async function (
   res,
   next
 ) {
-  if (!req.body.newPassword || req.body.newPassword?.length === 0) return next()
-  const { isValidPassword } = req.response
-  if (!isValidPassword)
-    return next(new CustomError("Old password not matched", 400))
-  const user = await findOne({ _id: req.user._id })
-  if (!user) return next(new CustomError("Invalid request!", 400))
+  if (
+    !req.body.newPassword ||
+    req.body.newPassword?.length === 0 ||
+    !req.body.passwordResetCode
+  )
+    return next()
+  const user = await findOne({
+    _id: req.user._id,
+    passwordResetCode: req.body.passwordResetCode,
+    passwordResetCodeExpiry: { $gte: new Date(Date.now()) },
+  })
+  if (!user) return next(new CustomError("Invalid Code!", 400))
   user.password = req.body.newPassword
   await user.save()
   req.response = {
@@ -258,6 +267,7 @@ module.exports.changePassword = routeTryCatcher(async function (
   }
   next()
 })
+
 module.exports.deleteAccount = routeTryCatcher(async function (req, res, next) {
   if (req.user._id.toString() !== req.params.id)
     return next("Not allowed!", 403)

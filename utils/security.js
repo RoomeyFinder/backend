@@ -11,7 +11,9 @@ module.exports.compareValueToHash = async function (value, hash) {
 };
 
 module.exports.createJWT = function (payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET);
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY
+  });
 };
 
 module.exports.verifyJWT = function (token) {
@@ -20,6 +22,6 @@ module.exports.verifyJWT = function (token) {
 
 module.exports.validateToken = async function (token) {
   const payload = module.exports.verifyJWT(token);
-  if (new Date(Date.now()) - new Date(payload.iat * 1000) > 8.64e7) return null;
+  if (new Date(Date.now()) - new Date(payload.exp * 1000) > 8.64e7) return null;
   return await findOne({ _id: payload._id });
 };
