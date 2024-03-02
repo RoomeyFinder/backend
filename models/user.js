@@ -180,6 +180,10 @@ const userSchema = new mongoose.Schema(
       default: new Date(Date.now()),
     },
     zipcode: String,
+    isVisible: {
+      type: Boolean,
+      default: true
+    }
   },
   {
     toObject: {

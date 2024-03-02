@@ -6,6 +6,10 @@ const purchaseSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "User",
       required: [true, "Please specify purchaser"]
+    },
+    validUntil: {
+      type: Date,
+      required: [true, "The validity of this  purchase must be provided"]
     }
   },
   {

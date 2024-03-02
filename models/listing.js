@@ -3,7 +3,7 @@ const Interest = require("./interest")
 
 const requiredPaths = [
   {
-    path: "idealRoommateDescription",
+    path: "lookingFor",
     errorMsg: "Please specify the description of your ideal roommate"
   },
   {
@@ -25,10 +25,6 @@ const requiredPaths = [
   {
     path: "city",
     errorMsg: "city must be provided"
-  },
-  {
-    path: "state",
-    errorMsg: "state must be provided"
   },
   {
     path: "country",
@@ -54,7 +50,7 @@ const requiredPaths = [
 ]
 const listingSchema = new mongoose.Schema(
   {
-    idealRoommateDescription: {
+    lookingFor: {
       type: String,
       maxlength: 120,
     },
@@ -103,7 +99,7 @@ const listingSchema = new mongoose.Schema(
     },
     rentDuration: {
       type: String,
-      enum: ["annually", "biannually", "quarterly", "monthly"],
+      enum: ["annually", "biannually", "quarterly", "monthly", ""],
     },
     currentOccupancyCount: {
       type: Number,
@@ -122,16 +118,15 @@ const listingSchema = new mongoose.Schema(
     },
     features: {
       type: [String],
-      // enum: [],
       validate: [(value) => value.length <= 20, "A maximum of 20 features"],
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     isDraft: {
       type: Boolean,
-      default: false,
+      default: true,
     }
   },
   {
@@ -150,7 +145,7 @@ listingSchema.virtual("unseenInterestsRecieved").get(async function () {
 })
 
 listingSchema.path("numberOfBedrooms").required(function () {
-  return this.isStudioApartment === false
+  return this.isDraft === false || this.isStudioApartment === false
 }, "Please specify the number of bedrooms")
 
 listingSchema.path("photos").validate(function(value){

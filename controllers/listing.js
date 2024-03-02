@@ -4,7 +4,7 @@ const { formatLocation, concatToArrayUntilMax } = require("../utils");
 
 module.exports.create = async function (data = {}, save = false) {
   const { 
-    idealRoommateDescription,
+    lookingFor,
     photos,
     owner,
     isStudioApartment,
@@ -12,28 +12,6 @@ module.exports.create = async function (data = {}, save = false) {
     longitude, latitude,
     streetAddress,
     city,
-    state,
-    country,
-    rentAmount,
-    rentDuration,
-    currentOccupancyCount,
-    description,
-    features,
-    isDraft
-  } = data
-
-  const expireAt = new Date(Date.now())
-  expireAt.setFullYear(expireAt.getFullYear() + 1)
-  let newListing = new Listing({
-    ...(longitude && latitude ? {location:  formatLocation(longitude, latitude)} : {}),
-    idealRoommateDescription,
-    photos,
-    owner,
-    isStudioApartment,
-    numberOfBedrooms,
-    streetAddress,
-    city,
-    state,
     country,
     rentAmount,
     rentDuration,
@@ -41,7 +19,27 @@ module.exports.create = async function (data = {}, save = false) {
     description,
     features,
     isDraft,
-    isActive: isDraft ? false : true
+    isActive,
+  } = data
+  const expireAt = new Date(Date.now())
+  expireAt.setFullYear(expireAt.getFullYear() + 1)
+  let newListing = await Listing.create({
+    ...(longitude && latitude ? {location:  formatLocation(longitude, latitude)} : {}),
+    lookingFor,
+    photos,
+    owner,
+    isStudioApartment,
+    numberOfBedrooms,
+    streetAddress,
+    city,
+    country,
+    rentAmount,
+    rentDuration,
+    currentOccupancyCount,
+    description,
+    features,
+    isDraft,
+    isActive,
   })
   if (save) return await newListing.save()
   return newListing
@@ -59,7 +57,7 @@ module.exports.findOne = async function (filter = {}) {
 
 module.exports.updateOne = async function (filter = {}, update = {}) {
   const allowedPaths = [
-    "idealRoommateDescription",
+    "lookingFor",
     "photos",
     "isStudioApartment",
     "numberOfBedrooms",

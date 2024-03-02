@@ -5,6 +5,7 @@ const {
   updateOne,
   deleteOne,
 } = require("../controllers/user")
+const User = require("../models/user")
 const cloudinary = require("../utils/cloudinary")
 const CustomError = require("../utils/error")
 const { routeTryCatcher } = require("../utils/routes")
@@ -174,6 +175,23 @@ module.exports.updateUser = routeTryCatcher(async function (req, res, next) {
   }
   return next()
 })
+
+module.exports.toggleProfileVisiblity = routeTryCatcher(
+  async (req, res, next) => {
+    const user = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { isVisible: req.body.isVisible },
+      { new: true }
+    )
+    res.status(200).json({
+      user,
+      statusCode: 200,
+      message: `Profile successfully ${
+        user.isVisible ? "activated" : "deactivated"
+      }`,
+    })
+  }
+)
 
 module.exports.completeSignup = routeTryCatcher(async function (
   req,
