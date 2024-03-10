@@ -106,7 +106,7 @@ const listingSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      maxlength: 250,
+      maxlength: 1000,
     },
     viewsCount: {
       type: Number,
@@ -117,7 +117,7 @@ const listingSchema = new mongoose.Schema(
       default: 0,
     },
     features: {
-      type: [String],
+      type: [{ value: String, category: String }],
       validate: [(value) => value.length <= 20, "A maximum of 20 features"],
     },
     isActive: {
@@ -152,6 +152,16 @@ listingSchema.path("photos").validate(function(value){
   if(this.isDraft === true) return value.length <= 10 
   return value.length >= 3 && value.length <= 10  
 }, "A minimum of 3 photos and a maximum of 10")
+
+listingSchema.pre(/^find/, function(next){
+  this.populate({
+    path: "owner",
+    model: "User", 
+    select: "isStudent isIdVerified school occupation gender firstName lastName"
+  })
+  console.log("thera", )
+  next()
+})
 
 requiredPaths.forEach(path => {
   listingSchema.path(path.path).required(function(){

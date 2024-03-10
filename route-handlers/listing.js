@@ -6,10 +6,15 @@ const {
   deleteOne,
 } = require("../controllers/listing")
 const CustomError = require("../utils/error")
+const Listing = require("../models/listing")
 const { routeTryCatcher } = require("../utils/routes")
 
 module.exports.createListing = routeTryCatcher(async function (req, res, next) {
   if (!Array.isArray(req.body.photos)) delete req.body.photos
+  if (!Array.isArray(req.body.features)) req.body.features = []
+  req.body.features = req.body.features
+    .filter((it) => it)
+    .map((it) => JSON.parse(it))
   let listing = await create(
     {
       ...req.body,
@@ -110,18 +115,19 @@ module.exports.getUsersListings = routeTryCatcher(async function (
   res,
   next
 ) {
-  const activeListings = await findMany({ owner: req.user._id, isActive: true })
+  const active = await findMany({ owner: req.user._id, isActive: true })
   const drafts = await findMany({ owner: req.user._id, isDraft: true })
-  const deactivatedListings = await findMany({
+  const deactivated = await findMany({
     owner: req.user._id,
     isActive: false,
+    isDraft: false,
   })
   req.response = {
     statusCode: 200,
     listings: {
-      activeListings,
+      active,
       drafts,
-      deactivatedListings,
+      deactivated,
     },
     status: "success",
   }
@@ -133,9 +139,68 @@ module.exports.deleteListing = routeTryCatcher(async function (req, res, next) {
     owner: req.user._id.toString(),
   })
   req.response = {
+    statusCode: 204,
+    listing,
+    status: "success",
+    message: "Listing deleted successfully"
+  }
+  return next()
+})
+
+module.exports.deactivateListing = routeTryCatcher(async function (
+  req,
+  res,
+  next
+) {
+  const listing = await Listing.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      owner: req.user._id.toString(),
+      isActive: true,
+    },
+    { isActive: false },
+    { new: true }
+  )
+  req.response = {
     statusCode: 200,
     listing,
     status: "success",
+    message: "Listing deactivated!"
+  }
+  return next()
+})
+module.exports.activateListing = routeTryCatcher(async function (
+  req,
+  res,
+  next
+) {
+  console.log(req.params.id)
+  const alreadyActiveListing = await Listing.findOne({
+    _id: { $ne: req.params.id },
+    isActive: true,
+    owner: req.user._id,
+  })
+  if (alreadyActiveListing)
+    return next(
+      new CustomError(
+        "You already have an active listing. Deactivate it in order to activate a different one.",
+        400
+      )
+    )
+  const listing = await Listing.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      isActive: false,
+      owner: req.user._id,
+    },
+    { isActive: true },
+    { new: true }
+  )
+  req.response = {
+    listing,
+    statusCode: 200,
+    status: "success",
+    message: "Listing activated"
   }
   return next()
 })
