@@ -1,15 +1,16 @@
-const Listing = require("../models/listing");
-const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder");
-const { formatLocation, concatToArrayUntilMax } = require("../utils");
+const Listing = require("../models/listing")
+const MongooseQueryBuilder = require("@exploitenomah/mongoose-query-builder")
+const { formatLocation, concatToArrayUntilMax } = require("../utils")
 
 module.exports.create = async function (data = {}, save = false) {
-  const { 
+  const {
     lookingFor,
     photos,
     owner,
     isStudioApartment,
     numberOfBedrooms,
-    longitude, latitude,
+    longitude,
+    latitude,
     streetAddress,
     city,
     country,
@@ -19,12 +20,14 @@ module.exports.create = async function (data = {}, save = false) {
     description,
     features,
     isDraft,
-    isActive,
+    isActivated,
   } = data
   const expireAt = new Date(Date.now())
   expireAt.setFullYear(expireAt.getFullYear() + 1)
   let newListing = await Listing.create({
-    ...(longitude && latitude ? {location:  formatLocation(longitude, latitude)} : {}),
+    ...(longitude && latitude
+      ? { location: formatLocation(longitude, latitude) }
+      : {}),
     lookingFor,
     photos,
     owner,
@@ -39,12 +42,11 @@ module.exports.create = async function (data = {}, save = false) {
     description,
     features,
     isDraft,
-    isActive,
+    isActivated,
   })
   if (save) return await newListing.save()
   return newListing
 }
-
 
 module.exports.findMany = async function (query = {}) {
   const listingsQuery = new MongooseQueryBuilder(Listing, query)
@@ -61,7 +63,7 @@ module.exports.updateOne = async function (filter = {}, update = {}) {
     "photos",
     "isStudioApartment",
     "numberOfBedrooms",
-    "longitude", 
+    "longitude",
     "latitude",
     "streetAddress",
     "city",
@@ -71,23 +73,37 @@ module.exports.updateOne = async function (filter = {}, update = {}) {
     "rentDuration",
     "currentOccupancyCount",
     "description",
-    "isActive",
+    "isActivated",
     "features",
+    "isDraft"
   ]
   const listing = await Listing.findOne(filter)
-  Object.keys(update).forEach(key => {
+  Object.keys(update).forEach((key) => {
     if (allowedPaths.includes(key) && update[key] !== undefined) {
-      if (key !== "longitude" && key !== "latitude" && key !== "photos" && key !== "features")
+      if (
+        key !== "longitude" &&
+        key !== "latitude" &&
+        key !== "photos" &&
+        key !== "features"
+      )
         listing[key] = update[key]
     }
   })
+  if(update.isDraft !== undefined) listing.isDraft = JSON.parse(update.isDraft)
+  if (update.isActivated !== undefined)
+  listing.isActivated = JSON.parse(update.isActivated)
   if (update.longitude !== undefined && update.latitude !== undefined) {
-    listing[location] = formatLocation(update.longitude, update.latitude)
+    listing.location = formatLocation(update.longitude, update.latitude)
   }
-  if(Array.isArray(update.photos))
+  if (Array.isArray(update.photos))
     listing.photos = concatToArrayUntilMax(10, listing.photos, update.photos)
-  if(Array.isArray(update.features))
-    listing.features = concatToArrayUntilMax(20, listing.features, update.features)
+  if (Array.isArray(update.photosToDelete)) {
+    const stringifiedPhotosToDelete = JSON.stringify(update.photosToDelete)
+    listing.photos = listing.photos.filter((photo) =>
+      stringifiedPhotosToDelete.includes(photo._id)
+    )
+  }
+  if (Array.isArray(update.features)) listing.features = update.features
   return await listing.save()
 }
 

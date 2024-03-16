@@ -8,6 +8,7 @@ const {
 const CustomError = require("../utils/error")
 const Listing = require("../models/listing")
 const { routeTryCatcher } = require("../utils/routes")
+const cloudinary = require("../utils/cloudinary")
 
 module.exports.createListing = routeTryCatcher(async function (req, res, next) {
   if (!Array.isArray(req.body.photos)) delete req.body.photos
@@ -42,7 +43,7 @@ module.exports.getListing = routeTryCatcher(async function (req, res, next) {
 })
 
 module.exports.updateListing = routeTryCatcher(async function (req, res, next) {
-  const {
+  let {
     lookingFor,
     photos,
     owner,
@@ -58,15 +59,51 @@ module.exports.updateListing = routeTryCatcher(async function (req, res, next) {
     latitude,
     longitude,
     features,
+    photosToDelete,
+    isActivated,
+    isDraft,
   } = req.body
+  if (photosToDelete) {
+    if (Array.isArray(photosToDelete)) {
+      photosToDelete = photosToDelete.map(async (photo) => {
+        if (typeof photo !== "string") return photo
+        return JSON.parse(photo).public_id
+      })
+      await Promise.all(
+        photosToDelete.map(async (photo) => {
+          if (typeof photo !== "string") return
+          return await cloudinary.uploader.destroy(JSON.parse(photo).public_id)
+        })
+      )
+    }
+    if (typeof photosToDelete === "string")
+      await cloudinary.uploader.destroy(JSON.parse(photosToDelete).public_id)
+  }
+  if (features) {
+    if (Array.isArray(features)) {
+      features = features.map((feature) => {
+        if (typeof feature === "string") return JSON.parse(feature)
+        return feature
+      })
+    } else if (typeof features === "string") features = [JSON.parse(features)]
+  } else features = []
+
   let apartmentTypeError = null
-  if (isStudioApartment === false && numberOfBedrooms === 0)
+  if (
+    (isStudioApartment === "false" || isStudioApartment === false) &&
+    numberOfBedrooms === 0
+  )
     apartmentTypeError = "Please specify the number of bedrooms"
-  else if (isStudioApartment === true && numberOfBedrooms > 0)
+  else if (
+    (isStudioApartment === "true" || isStudioApartment === true) &&
+    numberOfBedrooms > 0
+  )
     apartmentTypeError =
       "Apartment can either be studio or have multiple bedrooms"
   if (apartmentTypeError !== null)
     return next(new CustomError(`${apartmentTypeError}`, 400))
+  const originalCountOfPhotos = photos?.length
+  photos = photos?.filter((photo) => typeof photo.secure_url === "string")
   const listing = await updateOne(
     { _id: req.params.id, owner: req.user._id.toString() },
     {
@@ -74,6 +111,7 @@ module.exports.updateListing = routeTryCatcher(async function (req, res, next) {
       latitude,
       lookingFor,
       photos,
+      photosToDelete,
       owner,
       isStudioApartment,
       numberOfBedrooms,
@@ -86,12 +124,19 @@ module.exports.updateListing = routeTryCatcher(async function (req, res, next) {
       description,
       streetAddress,
       features,
+      isActivated: JSON.parse(isActivated) ,
+      isDraft: JSON.parse(isDraft),
     }
   )
   req.response = {
     listing,
     statusCode: 200,
     status: "success",
+    message: `${
+      photos?.length < originalCountOfPhotos
+        ? "Some photos failed to upload"
+        : "Listing updated successfully"
+    }`,
   }
   return next()
 })
@@ -115,11 +160,11 @@ module.exports.getUsersListings = routeTryCatcher(async function (
   res,
   next
 ) {
-  const active = await findMany({ owner: req.user._id, isActive: true })
+  const active = await findMany({ owner: req.user._id, isActivated: true })
   const drafts = await findMany({ owner: req.user._id, isDraft: true })
   const deactivated = await findMany({
     owner: req.user._id,
-    isActive: false,
+    isActivated: false,
     isDraft: false,
   })
   req.response = {
@@ -142,7 +187,7 @@ module.exports.deleteListing = routeTryCatcher(async function (req, res, next) {
     statusCode: 204,
     listing,
     status: "success",
-    message: "Listing deleted successfully"
+    message: "Listing deleted successfully",
   }
   return next()
 })
@@ -156,16 +201,16 @@ module.exports.deactivateListing = routeTryCatcher(async function (
     {
       _id: req.params.id,
       owner: req.user._id.toString(),
-      isActive: true,
+      isActivated: true,
     },
-    { isActive: false },
+    { isActivated: false },
     { new: true }
   )
   req.response = {
     statusCode: 200,
     listing,
     status: "success",
-    message: "Listing deactivated!"
+    message: "Listing deactivated!",
   }
   return next()
 })
@@ -174,10 +219,9 @@ module.exports.activateListing = routeTryCatcher(async function (
   res,
   next
 ) {
-  console.log(req.params.id)
   const alreadyActiveListing = await Listing.findOne({
     _id: { $ne: req.params.id },
-    isActive: true,
+    isActivated: true,
     owner: req.user._id,
   })
   if (alreadyActiveListing)
@@ -190,17 +234,17 @@ module.exports.activateListing = routeTryCatcher(async function (
   const listing = await Listing.findOneAndUpdate(
     {
       _id: req.params.id,
-      isActive: false,
+      isActivated: false,
       owner: req.user._id,
     },
-    { isActive: true },
+    { isActivated: true },
     { new: true }
   )
   req.response = {
     listing,
     statusCode: 200,
     status: "success",
-    message: "Listing activated"
+    message: "Listing activated",
   }
   return next()
 })

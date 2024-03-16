@@ -4,49 +4,48 @@ const Interest = require("./interest")
 const requiredPaths = [
   {
     path: "lookingFor",
-    errorMsg: "Please specify the description of your ideal roommate"
+    errorMsg: "Please specify the description of your ideal roommate",
   },
   {
     path: "photos",
-    errorMsg: "A minimum of 3 photos and a maximum of 10"
+    errorMsg: "A minimum of 3 photos and a maximum of 10",
   },
   {
     path: "location.type",
-    errorMsg: "Invalid location"
+    errorMsg: "Invalid location",
   },
   {
     path: "location.coordinates",
-    errorMsg: "Invalid location"
+    errorMsg: "Invalid location",
   },
   {
     path: "streetAddress",
-    errorMsg: "street addresss must be provided"
+    errorMsg: "street addresss must be provided",
   },
   {
     path: "city",
-    errorMsg: "city must be provided"
+    errorMsg: "city must be provided",
   },
   {
     path: "country",
-    errorMsg: "country must be provided"
+    errorMsg: "country must be provided",
   },
   {
     path: "rentAmount",
-    errorMsg: "Please specify the rent amount"
+    errorMsg: "Please specify the rent amount",
   },
   {
     path: "rentDuration",
-    errorMsg: "Please specify the rent duration"
+    errorMsg: "Please specify the rent duration",
   },
   {
     path: "currentOccupancyCount",
-    errorMsg: "Please specify current number of occupants"
+    errorMsg: "Please specify current number of occupants",
   },
   {
     path: "description",
-    errorMsg: "Please add a description"
+    errorMsg: "Please add a description",
   },
-
 ]
 const listingSchema = new mongoose.Schema(
   {
@@ -55,15 +54,17 @@ const listingSchema = new mongoose.Schema(
       maxlength: 120,
     },
     photos: {
-      type: [{
-        asset_id: String,
-        public_id: String,
-        width: Number,
-        height: Number,
-        secure_url: String,
-        etag: String,
-        created_at: Date
-      }],
+      type: [
+        {
+          asset_id: String,
+          public_id: String,
+          width: Number,
+          height: Number,
+          secure_url: String,
+          etag: String,
+          created_at: Date,
+        },
+      ],
     },
     owner: {
       type: mongoose.Types.ObjectId,
@@ -120,14 +121,14 @@ const listingSchema = new mongoose.Schema(
       type: [{ value: String, category: String }],
       validate: [(value) => value.length <= 20, "A maximum of 20 features"],
     },
-    isActive: {
+    isActivated: {
       type: Boolean,
       default: false,
     },
     isDraft: {
       type: Boolean,
       default: true,
-    }
+    },
   },
   {
     toObject: {
@@ -141,31 +142,36 @@ const listingSchema = new mongoose.Schema(
 )
 
 listingSchema.virtual("unseenInterestsRecieved").get(async function () {
-  return await Interest.countDocuments({ doc: this._id, type: "Listing", seen: false })
+  return await Interest.countDocuments({
+    doc: this._id,
+    type: "Listing",
+    seen: false,
+  })
 })
 
 listingSchema.path("numberOfBedrooms").required(function () {
-  return this.isDraft === false || this.isStudioApartment === false
+  return this.isStudioApartment === false && this.isDraft === false
 }, "Please specify the number of bedrooms")
 
-listingSchema.path("photos").validate(function(value){
-  if(this.isDraft === true) return value.length <= 10 
-  return value.length >= 3 && value.length <= 10  
+listingSchema.path("photos").validate(function (value) {
+  if (this.isDraft === true) return value.length <= 10
+  return value.length >= 3 && value.length <= 10
 }, "A minimum of 3 photos and a maximum of 10")
 
-listingSchema.pre(/^find/, function(next){
+listingSchema.pre(/^find/, function (next) {
   this.populate({
     path: "owner",
-    model: "User", 
-    select: "isStudent isIdVerified school occupation gender firstName lastName"
+    model: "User",
+    select:
+      "isStudent isIdVerified school occupation gender firstName lastName",
   })
-  console.log("thera", )
+
   next()
 })
 
-requiredPaths.forEach(path => {
-  listingSchema.path(path.path).required(function(){
-    return this.isDraft === false 
+requiredPaths.forEach((path) => {
+  listingSchema.path(path.path).required(function () {
+    return this.isDraft === false
   }, path.errorMsg)
 })
 

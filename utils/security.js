@@ -21,7 +21,7 @@ module.exports.verifyJWT = function (token) {
 }
 
 module.exports.validateToken = async function (token) {
-  console.log(token, "jdfaaafkdjs")
+
   let tokenToUse
   try {
     tokenToUse = JSON.parse(token)
