@@ -107,7 +107,7 @@ const listingSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      maxlength: 1000,
+      maxlength: 5000,
     },
     viewsCount: {
       type: Number,

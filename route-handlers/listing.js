@@ -160,20 +160,10 @@ module.exports.getUsersListings = routeTryCatcher(async function (
   res,
   next
 ) {
-  const active = await findMany({ owner: req.user._id, isActivated: true })
-  const drafts = await findMany({ owner: req.user._id, isDraft: true })
-  const deactivated = await findMany({
-    owner: req.user._id,
-    isActivated: false,
-    isDraft: false,
-  })
+  const listings = await findMany({ owner: req.user._id })
   req.response = {
     statusCode: 200,
-    listings: {
-      active,
-      drafts,
-      deactivated,
-    },
+    listings,
     status: "success",
   }
   return next()

@@ -19,7 +19,7 @@ module.exports.validateListingCreationRequest = routeTryCatcher(
         return next(
           new CustomError(
             "You already have an active listing! Deactivate or delete it to create a new active listing",
-            400
+            403
           )
         )
     next()
@@ -45,7 +45,7 @@ module.exports.validateListingUpdateRequest = routeTryCatcher(
       return next(
         new CustomError(
           "You already have an active listing! Deactivate or delete it to activate this listing",
-          400
+          403
         )
       )
     next()
