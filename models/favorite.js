@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const bookmarkSchema = new mongoose.Schema(
+const favoriteSchema = new mongoose.Schema(
   {
     owner: {
       type: mongoose.Types.ObjectId,
@@ -9,13 +9,13 @@ const bookmarkSchema = new mongoose.Schema(
     },
     doc: {
       type: mongoose.Types.ObjectId,
-      required: [true, "Bookmark reference is required!"],
+      required: [true, "Favorite reference is required!"],
       refPath: "type"
     },
     type: {
       type: String,
-      required: [true, "Type of bookmark is required!"],
-      enum: ["User", "Listing"]
+      required: [true, "Type of favorite is required!"],
+      enum: ["user", "listing"]
     }
   },
   {
@@ -29,6 +29,6 @@ const bookmarkSchema = new mongoose.Schema(
   }
 )
 
-const Bookmark = mongoose.model("bookmark", bookmarkSchema)
+const Favorite = mongoose.model("favorite", favoriteSchema)
 
-module.exports = Bookmark
+module.exports = Favorite
