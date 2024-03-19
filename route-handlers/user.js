@@ -227,7 +227,7 @@ module.exports.getMultipleUsers = routeTryCatcher(async function (
   res,
   next
 ) {
-  const users = await findMany(req.query)
+  const users = await findMany({ ...req.query, _id: { $ne: req.user?._id } })
   req.response = {
     statusCode: 200,
     users,
