@@ -183,6 +183,10 @@ const userSchema = new mongoose.Schema(
     isVisible: {
       type: Boolean,
       default: true
+    },
+    isDeactivated: {
+      type: Boolean,
+      default: false
     }
   },
   {

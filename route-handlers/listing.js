@@ -146,7 +146,10 @@ module.exports.getMultipleListings = routeTryCatcher(async function (
   res,
   next
 ) {
-  const listings = await findMany(req.query)
+  const listings = await findMany({
+    ...req.query,
+    ...(req.user ? { owner: { $ne: req.user?._id } } : {}),
+  })
   req.response = {
     statusCode: 200,
     listings,

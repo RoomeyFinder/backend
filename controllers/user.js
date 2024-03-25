@@ -76,6 +76,7 @@ module.exports.updateOne = async function (filter = {}, update = {}) {
     "phoneNumber",
     "zipcode",
     "profileImage",
+    "isDeactivated"
   ]
   Object.keys(update).forEach((key) => {
     if (allowedPaths.includes(key) && update[key] !== undefined)

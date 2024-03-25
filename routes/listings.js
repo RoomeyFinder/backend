@@ -19,7 +19,7 @@ const {
 } = require("../middlewares/listing")
 const router = express.Router()
 
-router.get("/", protectRoute, getMultipleListings, sendResponse)
+router.get("/", getMultipleListings, sendResponse)
 router.get("/me", protectRoute, getUsersListings, sendResponse)
 router.post(
   "/",

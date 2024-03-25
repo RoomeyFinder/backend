@@ -88,6 +88,9 @@ module.exports.login = routeTryCatcher(async function (req, res, next) {
       )
     )
   }
+  if (user.isDeactivated) {
+    return next(new CustomError("Please reactivate your account to login", 301))
+  }
   const token = createJWT({ _id: user._id })
   await user.updateLastSeen()
   delete user.password
@@ -227,7 +230,11 @@ module.exports.getMultipleUsers = routeTryCatcher(async function (
   res,
   next
 ) {
-  const users = await findMany({ ...req.query, _id: { $ne: req.user?._id } })
+  const users = await findMany({
+    ...req.query,
+    isDeactivated: { $ne: true },
+    ...(req.user ? { _id: { $ne: req.user?._id } } : {}),
+  })
   req.response = {
     statusCode: 200,
     users,
@@ -286,10 +293,20 @@ module.exports.changePassword = routeTryCatcher(async function (
   next()
 })
 
-module.exports.deleteAccount = routeTryCatcher(async function (req, res, next) {
+module.exports.deactivateUser = routeTryCatcher(async function (
+  req,
+  res,
+  next
+) {
   if (req.user._id.toString() !== req.params.id)
     return next("Not allowed!", 403)
-  const user = await deleteOne({ _id: req.user._id.toString() })
+  const user = await updateOne(
+    { _id: req.user._id.toString() },
+    {
+      isDeactivated: true,
+    }
+  )
+  console.log(user, )
   req.response = {
     statusCode: 200,
     user,
