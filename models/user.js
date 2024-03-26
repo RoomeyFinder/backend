@@ -182,12 +182,13 @@ const userSchema = new mongoose.Schema(
     zipcode: String,
     isVisible: {
       type: Boolean,
-      default: true
+      default: true,
     },
     isDeactivated: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    newEmail: String
   },
   {
     toObject: {
@@ -293,33 +294,12 @@ userSchema.methods.generatePasswordResetCode = async function () {
 }
 
 userSchema.methods.sendVerificationEmail = async function () {
-  const options = {
-    from: process.env.APP_EMAIL_ADDRESS,
-    to: this.email,
-    subject: "Please verify your email",
-    html: EmailSender.generateEmailBody({
-      name: `${this.firstName}`,
-      intro: "Please verify your email",
-      action: {
-        instructions: "Use the six digit code to verify your email",
-        button: {
-          text: this.emailVerificationCode,
-        },
-      },
-      outro: "Welcome to RoomeyFinder",
-    }),
-  }
-  let isSuccess = false
-  try {
-    isSuccess = EmailSender.sendEmail(options)
-  } catch (err) {
-    process.env.NODE_ENV !== "test" && console.log(err)
-    console.log("failed to send email")
-    isSuccess = false
-  }
-  return isSuccess
+  return userSchema.statics.sendVerificationEmail({
+    email: this.email,
+    emailVerificationCode: this.emailVerificationCode,
+    firstName: this.firstName,
+  })
 }
-
 
 userSchema.methods.sendPasswordResetEmail = async function () {
   const options = {
@@ -336,6 +316,38 @@ userSchema.methods.sendPasswordResetEmail = async function () {
         },
       },
       outro: "",
+    }),
+  }
+  let isSuccess = false
+  try {
+    isSuccess = EmailSender.sendEmail(options)
+  } catch (err) {
+    process.env.NODE_ENV !== "test" && console.log(err)
+    console.log("failed to send email")
+    isSuccess = false
+  }
+  return isSuccess
+}
+
+userSchema.statics.sendVerificationEmail = function ({
+  email,
+  firstName,
+  emailVerificationCode,
+}) {
+  const options = {
+    from: process.env.APP_EMAIL_ADDRESS,
+    to: email,
+    subject: "Please verify your email",
+    html: EmailSender.generateEmailBody({
+      name: `${firstName}`,
+      intro: "Please verify your email",
+      action: {
+        instructions: "Use the six digit code to verify your email",
+        button: {
+          text: emailVerificationCode,
+        },
+      },
+      // outro: "Welcome to RoomeyFinder",
     }),
   }
   let isSuccess = false

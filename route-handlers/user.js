@@ -6,6 +6,7 @@ const {
   deleteOne,
 } = require("../controllers/user")
 const User = require("../models/user")
+const { generateRandomSixDigitToken } = require("../utils")
 const cloudinary = require("../utils/cloudinary")
 const CustomError = require("../utils/error")
 const { routeTryCatcher } = require("../utils/routes")
@@ -293,6 +294,70 @@ module.exports.changePassword = routeTryCatcher(async function (
   next()
 })
 
+module.exports.requestEmailChange = routeTryCatcher(async function (
+  req,
+  res,
+  next
+) {
+  if (!req.body.newEmail)
+    return next(new CustomError("New email must be provided", 400))
+  const existingUserWithEmail = await findOne({ email: req.body.newEmail })
+  if (existingUserWithEmail)
+    return next(new CustomError("Email address already in use", 400))
+  const user = await findOne({
+    _id: req.user._id,
+  })
+  if (!user) return next(new CustomError("Invalid User!", 400))
+  user.emailVerificationCode = generateRandomSixDigitToken()
+  user.newEmail = req.body.newEmail
+  await user.save()
+  await User.sendVerificationEmail({
+    email: req.body.newEmail,
+    firstName: user.firstName,
+    emailVerificationCode: user.emailVerificationCode,
+  })
+  await user.save()
+  req.response = {
+    statusCode: 200,
+    status: "success",
+    message: "Verification code sent!",
+  }
+  next()
+})
+
+module.exports.confirmEmailChange = routeTryCatcher(async function (
+  req,
+  res,
+  next
+) {
+  if (!req.body.newEmail)
+    return next(new CustomError("New email must be provided", 400))
+  if (!req.body.emailVerificationCode)
+    return next(
+      new CustomError("Email confirmation code must be provided", 400)
+    )
+  const existingUserWithEmail = await findOne({ email: req.body.newEmail })
+  if (existingUserWithEmail)
+    return next(new CustomError("Email address already in use", 400))
+  const user = await findOne({
+    _id: req.user._id,
+    emailVerificationCode: req.body.emailVerificationCode,
+    newEmail: req.body.newEmail,
+  })
+  if (!user) return next(new CustomError("Invalid User!", 400))
+  user.email = user.newEmail
+  user.newEmail = null
+  user.emailVerificationCode = undefined
+  await user.save()
+  req.response = {
+    statusCode: 200,
+    status: "success",
+    message: "Email address changed successfully",
+    user,
+  }
+  next()
+})
+
 module.exports.deactivateUser = routeTryCatcher(async function (
   req,
   res,
@@ -306,7 +371,6 @@ module.exports.deactivateUser = routeTryCatcher(async function (
       isDeactivated: true,
     }
   )
-  console.log(user, )
   req.response = {
     statusCode: 200,
     user,

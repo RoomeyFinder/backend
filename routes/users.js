@@ -1,6 +1,6 @@
 const express = require('express');
 const { protectRoute } = require("../middlewares/auth");
-const { getMultipleUsers, signup, verifyEmail, login, updateUser, getUser, deactivateUser, completeSignup, resendEmailVerificationCode, validatePassword, changePassword, toggleProfileVisiblity } = require("../route-handlers/user");
+const { getMultipleUsers, signup, verifyEmail, login, updateUser, getUser, deactivateUser, completeSignup, resendEmailVerificationCode, validatePassword, changePassword, toggleProfileVisiblity, requestEmailChange, confirmEmailChange } = require("../route-handlers/user");
 const { sendResponse, attachImagesPathToReq } = require("../utils/routes");
 const { multerUpload } = require("../middlewares/multer");
 const getImageUrl = require("../middlewares/cloudinary");
@@ -12,6 +12,8 @@ router.post("/verify-email", resendEmailVerificationCode, sendResponse)
 router.put("/verify-email/:emailVerificationCode", completeSignup, sendResponse)
 router.post("/login", login, sendResponse)
 router.post("/change-password", protectRoute, validatePassword, changePassword, sendResponse)
+router.post("/request-email-change", protectRoute, requestEmailChange, sendResponse)
+router.post("/confirm-email-change", protectRoute, confirmEmailChange, sendResponse)
 router.get("/", getMultipleUsers, sendResponse)
 router.get("/me", protectRoute, getUser, sendResponse)
 router.put(
